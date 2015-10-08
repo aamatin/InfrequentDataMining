@@ -1,6 +1,6 @@
 package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
-import com.mbzshajib.mining.processor.uncertain.model.UncertainTree;
+import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
 import com.mbzshajib.utility.model.Output;
 
 /**
@@ -15,16 +15,16 @@ import com.mbzshajib.utility.model.Output;
  */    
 
 public class TreeConstructionOutput implements Output {
-    private UncertainTree uncertainTree;
+    private WeightedTree weightedTree;
     private long endTime;
     private long startTime;
 
-    public UncertainTree getUncertainTree() {
-        return uncertainTree;
+    public WeightedTree getWeightedTree() {
+        return weightedTree;
     }
 
-    public void setUncertainTree(UncertainTree uncertainTree) {
-        this.uncertainTree = uncertainTree;
+    public void setWeightedTree(WeightedTree weightedTree) {
+        this.weightedTree = weightedTree;
     }
 
     public long getEndTime() {

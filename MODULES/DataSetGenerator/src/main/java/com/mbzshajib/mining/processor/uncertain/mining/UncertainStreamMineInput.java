@@ -1,6 +1,6 @@
 package com.mbzshajib.mining.processor.uncertain.mining;
 
-import com.mbzshajib.mining.processor.uncertain.model.UncertainTree;
+import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
 import com.mbzshajib.utility.model.Input;
 
 /**
@@ -17,7 +17,7 @@ import com.mbzshajib.utility.model.Input;
 
 public class UncertainStreamMineInput implements Input {
     private double minSupport;
-    private UncertainTree uncertainTree;
+    private WeightedTree weightedTree;
 
     public double getMinSupport() {
         return minSupport;
@@ -27,11 +27,11 @@ public class UncertainStreamMineInput implements Input {
         this.minSupport = minSupport;
     }
 
-    public UncertainTree getUncertainTree() {
-        return uncertainTree;
+    public WeightedTree getWeightedTree() {
+        return weightedTree;
     }
 
-    public void setUncertainTree(UncertainTree uncertainTree) {
-        this.uncertainTree = uncertainTree;
+    public void setWeightedTree(WeightedTree weightedTree) {
+        this.weightedTree = weightedTree;
     }
 }

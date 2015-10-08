@@ -17,17 +17,17 @@ import java.util.List;
  * ****************************************************************
  */
 
-public class UncertainTree {
-    private UNode rootNode;
+public class WeightedTree {
+    private WeightedNode rootNode;
     private HeaderTable headerTable;
     private int frameSize;
     private int windowSize;
 
-    public UncertainTree(int frameSize, int windowSize) throws DataNotValidException {
+    public WeightedTree(int frameSize, int windowSize) throws DataNotValidException {
         this.frameSize = frameSize;
         this.windowSize = windowSize;
         this.headerTable = new HeaderTable(windowSize);
-        this.rootNode = new UNode("0", windowSize);
+        this.rootNode = new WeightedNode("0", windowSize);
         this.rootNode.setParentNode(null);
     }
 
@@ -47,7 +47,7 @@ public class UncertainTree {
         return builder.toString();
     }
 
-    public UNode getRootNode() {
+    public WeightedNode getRootNode() {
         return rootNode;
     }
 
@@ -56,12 +56,12 @@ public class UncertainTree {
     }
 
     public void addTransactionToTree(List<WInputData> wInputData, int frameNo) throws DataNotValidException {
-        UNode parentNode = rootNode;
+        WeightedNode parentNode = rootNode;
         for (WInputData inputData : wInputData) {
             parentNode = addNode(inputData, parentNode, frameNo);
         }
     }
-    private UNode addNode(WInputData wInputData, UNode parentNode, int frameNo) throws DataNotValidException {
+    private WeightedNode addNode(WInputData wInputData, WeightedNode parentNode, int frameNo) throws DataNotValidException {
         int foundIndex = -1;
         for (int i = 0; i < parentNode.getChildNodeList().size(); i++) {
             if (parentNode.getChildNodeList().get(i).isSameId(wInputData.getId())) {
@@ -69,14 +69,14 @@ public class UncertainTree {
             }
         }
         if (foundIndex == -1) {
-            UNode node = new UNode(wInputData.getId(), windowSize);
+            WeightedNode node = new WeightedNode(wInputData.getId(), windowSize);
             parentNode.addChild(node);
             headerTable.updateHeaderTable(node);
             WData wData = new WData(wInputData.getItemWeight(), wInputData.getMaxValue());
             node.addUData(frameNo, wData);
             return node;
         } else {
-            UNode tmpNode = parentNode.getChildNodeList().get(foundIndex);
+            WeightedNode tmpNode = parentNode.getChildNodeList().get(foundIndex);
             WData wData = new WData(wInputData.getItemWeight(), wInputData.getMaxValue());
             tmpNode.addUData(frameNo, wData);
             return tmpNode;
@@ -87,18 +87,18 @@ public class UncertainTree {
         headerTable.slideHeaderTable();
     }
 
-    private void removeOneFrameOldestData(UNode node) {
+    private void removeOneFrameOldestData(WeightedNode node) {
         for (int i = 0; i < node.getChildNodeList().size(); i++) {
-            UNode tmpNode = node.getChildNodeList().get(i);
+            WeightedNode tmpNode = node.getChildNodeList().get(i);
             tmpNode.slide();
         }
         removeEmptyChildNodes(node);
     }
 
-    private void removeEmptyChildNodes(UNode node) {
+    private void removeEmptyChildNodes(WeightedNode node) {
         int loopCounter = node.getChildNodeList().size();
         for (int i = 0; i < loopCounter; i++) {
-            UNode tmpNode = node.getChildNodeList().get(i);
+            WeightedNode tmpNode = node.getChildNodeList().get(i);
             boolean isDeleted = tmpNode.removeNodeIfEmpty();
             if (isDeleted) {
                 loopCounter = loopCounter - 1;
@@ -112,7 +112,7 @@ public class UncertainTree {
 
 
 
-    public void setRootNode(UNode rootNode) {
+    public void setRootNode(WeightedNode rootNode) {
         this.rootNode = rootNode;
     }
 
@@ -136,20 +136,20 @@ public class UncertainTree {
         this.windowSize = windowSize;
     }
 
-    public UncertainTree copy() throws DataNotValidException {
-        UncertainTree uncertainTree = new UncertainTree(frameSize, windowSize);
-        UNode copiedNode = rootNode.copy();
+    public WeightedTree copy() throws DataNotValidException {
+        WeightedTree weightedTree = new WeightedTree(frameSize, windowSize);
+        WeightedNode copiedNode = rootNode.copy();
         HeaderTable headerTable = this.headerTable.copy();
         copyHeaderTable(this.headerTable, headerTable, this.rootNode, copiedNode);
-        uncertainTree.setRootNode(copiedNode);
-        uncertainTree.setHeaderTable(headerTable);
-        return uncertainTree;
+        weightedTree.setRootNode(copiedNode);
+        weightedTree.setHeaderTable(headerTable);
+        return weightedTree;
     }
 
-    private HeaderTable copyHeaderTable(HeaderTable mainTable, HeaderTable clonedTable, UNode mainNode, UNode clonedNode) {
+    private HeaderTable copyHeaderTable(HeaderTable mainTable, HeaderTable clonedTable, WeightedNode mainNode, WeightedNode clonedNode) {
         for (int i = 0; i < mainNode.getChildNodeList().size(); i++) {
-            UNode nodeOriginal = mainNode.getChildNodeList().get(i);
-            UNode nodeCopied = clonedNode.getChildNodeList().get(i);
+            WeightedNode nodeOriginal = mainNode.getChildNodeList().get(i);
+            WeightedNode nodeCopied = clonedNode.getChildNodeList().get(i);
 
             int index = mainTable.findNode(nodeOriginal);
             if (index == -1) {

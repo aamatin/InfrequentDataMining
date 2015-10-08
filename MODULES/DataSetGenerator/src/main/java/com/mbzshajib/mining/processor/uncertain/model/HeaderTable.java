@@ -27,23 +27,23 @@ public class HeaderTable {
         headerTableItems = new ArrayList<HeaderTableItem>();
     }
 
-    public void updateHeaderTable(UNode uNode) throws DataNotValidException {
+    public void updateHeaderTable(WeightedNode weightedNode) throws DataNotValidException {
         HeaderTableItem item = null;
-        if ((item = findHeaderTableItemById(uNode.getId())) == null) {
-            HeaderTableItem headerTableItem = addNewTableItem(uNode.getId());
-            headerTableItem.updateHeaderData(uNode);
+        if ((item = findHeaderTableItemById(weightedNode.getId())) == null) {
+            HeaderTableItem headerTableItem = addNewTableItem(weightedNode.getId());
+            headerTableItem.updateHeaderData(weightedNode);
 
         } else {
-            item.updateHeaderData(uNode);
+            item.updateHeaderData(weightedNode);
         }
     }
 
     public void slideHeaderTable() {
         for (HeaderTableItem item : headerTableItems) {
-            List<UNode> nodes = item.getNodeList();
+            List<WeightedNode> nodes = item.getNodeList();
             int counter = nodes.size();
             for (int i = 0; i < counter; i++) {
-                UNode node = nodes.get(i);
+                WeightedNode node = nodes.get(i);
                 boolean isEmpty = true;
                 for (WData data : node.getUncertainDataList()) {
                     if (data.getItemWeight() > 0) {
@@ -107,8 +107,8 @@ public class HeaderTable {
     }
 
 
-    public List<UNode> getAllNodesOfHeaderTableItem(String id) {
-        List<UNode> list = null;
+    public List<WeightedNode> getAllNodesOfHeaderTableItem(String id) {
+        List<WeightedNode> list = null;
         HeaderTableItem item = findHeaderTableItemById(id);
         if (item != null) {
             list = item.getNodeList();
@@ -127,7 +127,7 @@ public class HeaderTable {
         return result;
     }
 
-    public int findNode(UNode node) {
+    public int findNode(WeightedNode node) {
         int result = -1;
         for (int i = 0; i < headerTableItems.size(); i++) {
             HeaderTableItem headerTableItem = headerTableItems.get(i);
@@ -153,7 +153,7 @@ public class HeaderTable {
         return headerTable;
     }
 
-    void addNode(UNode node, int index) {
+    void addNode(WeightedNode node, int index) {
         HeaderTableItem item = findHeaderTableItemById(node.getId());
         item.addNodeItem(node, index);
     }
@@ -170,8 +170,8 @@ public class HeaderTable {
         return result;
     }
 
-    public void updateHeaderTableFromDistinctList(List<UNode> distinctList) throws DataNotValidException {
-        for (UNode node : distinctList) {
+    public void updateHeaderTableFromDistinctList(List<WeightedNode> distinctList) throws DataNotValidException {
+        for (WeightedNode node : distinctList) {
             updateHeaderTable(node);
         }
     }

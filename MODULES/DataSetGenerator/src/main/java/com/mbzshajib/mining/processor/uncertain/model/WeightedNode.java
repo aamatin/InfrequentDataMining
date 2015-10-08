@@ -18,23 +18,23 @@ import java.util.List;
  * ****************************************************************
  */
 
-public class UNode {
+public class WeightedNode {
 
     private String id;
     private int frameSize;
-    private UNode parentNode;
-    private List<UNode> childNodeList;
+    private WeightedNode parentNode;
+    private List<WeightedNode> childNodeList;
     private List<WData> uncertainDataList;
     private double miningProbability;
 
-    private UNode() {
+    private WeightedNode() {
 
     }
 
-    public UNode(String id, int frameSize) {
+    public WeightedNode(String id, int frameSize) {
         this.id = id;
         this.frameSize = frameSize;
-        childNodeList = new ArrayList<UNode>();
+        childNodeList = new ArrayList<WeightedNode>();
         uncertainDataList = new ArrayList<WData>(frameSize);
         for (int i = 0; i < frameSize; i++) {
             WData wData = new WData(0, 0);
@@ -51,7 +51,7 @@ public class UNode {
         wData.setItemWeight(wData.getItemWeight() + dataToBeAdded.getItemWeight());
     }
 
-    public void addChild(UNode childNode) {
+    public void addChild(WeightedNode childNode) {
         childNode.setParentNode(this);
         childNodeList.add(childNode);
     }
@@ -64,19 +64,19 @@ public class UNode {
         this.id = id;
     }
 
-    public UNode getParentNode() {
+    public WeightedNode getParentNode() {
         return parentNode;
     }
 
-    public void setParentNode(UNode parentNode) {
+    public void setParentNode(WeightedNode parentNode) {
         this.parentNode = parentNode;
     }
 
-    public List<UNode> getChildNodeList() {
+    public List<WeightedNode> getChildNodeList() {
         return childNodeList;
     }
 
-    public void setChildNodeList(List<UNode> childNodeList) {
+    public void setChildNodeList(List<WeightedNode> childNodeList) {
         this.childNodeList = childNodeList;
     }
 
@@ -91,7 +91,7 @@ public class UNode {
                 .append("Child ").append(childNodeList.size())
                 .append(Constant.TABBED_HASH)
                 .append("[ ");
-        for (UNode node : childNodeList) {
+        for (WeightedNode node : childNodeList) {
             stringBuilder
                     .append(Constant.TABBED_HASH)
                     .append(node.getId())
@@ -104,7 +104,7 @@ public class UNode {
             stringBuilder.append("]");
         }
         stringBuilder.append(" ]");
-        for (UNode node : childNodeList) {
+        for (WeightedNode node : childNodeList) {
             stringBuilder.append(node.traverse());
         }
         return stringBuilder.toString();
@@ -118,7 +118,7 @@ public class UNode {
         this.uncertainDataList.remove(this.uncertainDataList.get(0));
         this.uncertainDataList.add(new WData(0, 0));
 
-        for (UNode node : childNodeList) {
+        for (WeightedNode node : childNodeList) {
             node.slide();
         }
     }
@@ -157,20 +157,20 @@ public class UNode {
         return uncertainDataList;
     }
 
-    public UNode copy() {
-        UNode nodeToBeCopied = this;
-        UNode rootNode = new UNode(new String(nodeToBeCopied.getId()), nodeToBeCopied.getFrameSize());
+    public WeightedNode copy() {
+        WeightedNode nodeToBeCopied = this;
+        WeightedNode rootNode = new WeightedNode(new String(nodeToBeCopied.getId()), nodeToBeCopied.getFrameSize());
         rootNode.setParentNode(null);
         for (int i = 0; i < nodeToBeCopied.getChildNodeList().size(); i++) {
-            UNode node = nodeToBeCopied.getChildNodeList().get(i);
-            UNode copiedNode = copyNodes(node, rootNode);
+            WeightedNode node = nodeToBeCopied.getChildNodeList().get(i);
+            WeightedNode copiedNode = copyNodes(node, rootNode);
             rootNode.setChildNode(copiedNode);
         }
         return rootNode;
     }
 
-    private UNode copyNodes(UNode nodeToBeCopied, UNode parentNode) {
-        UNode resultNode = new UNode(new String(nodeToBeCopied.getId()), nodeToBeCopied.getFrameSize());
+    private WeightedNode copyNodes(WeightedNode nodeToBeCopied, WeightedNode parentNode) {
+        WeightedNode resultNode = new WeightedNode(new String(nodeToBeCopied.getId()), nodeToBeCopied.getFrameSize());
         resultNode.setParentNode(parentNode);
         List<WData> wDataList = new ArrayList<WData>();
         for (WData wData : nodeToBeCopied.getUncertainDataList()) {
@@ -178,20 +178,20 @@ public class UNode {
         }
         resultNode.setUncertainDataList(wDataList);
         for (int i = 0; i < nodeToBeCopied.getChildNodeList().size(); i++) {
-            UNode node = nodeToBeCopied.getChildNodeList().get(i);
-            UNode copiedNode = copyNodes(node, resultNode);
+            WeightedNode node = nodeToBeCopied.getChildNodeList().get(i);
+            WeightedNode copiedNode = copyNodes(node, resultNode);
             resultNode.setChildNode(copiedNode);
         }
         return resultNode;
     }
 
-    private void setChildNode(UNode childNode) {
+    private void setChildNode(WeightedNode childNode) {
         this.childNodeList.add(childNode);
     }
 
     @Override
     public String toString() {
-        return "UNode{" +
+        return "WeightedNode{" +
                 "id='" + id + '\'' +
                 '}';
     }
@@ -212,14 +212,14 @@ public class UNode {
         return result;
     }
 
-    public void removeChildNode(UNode childNode) {
+    public void removeChildNode(WeightedNode childNode) {
         this.childNodeList.remove(childNode);
     }
 
-    public List<UNode> getDistinctNodes() {
-        List<UNode> result = new ArrayList<UNode>();
+    public List<WeightedNode> getDistinctNodes() {
+        List<WeightedNode> result = new ArrayList<WeightedNode>();
         for (int index = 0; index < childNodeList.size(); index++) {
-            UNode child = childNodeList.get(index);
+            WeightedNode child = childNodeList.get(index);
             if (!result.contains(child)) {
                 result.add(child);
             }
@@ -228,10 +228,10 @@ public class UNode {
         return result;
     }
 
-    public void removeNodeIfChildOfAnyDepth(UNode node) {
+    public void removeNodeIfChildOfAnyDepth(WeightedNode node) {
         int count = childNodeList.size();
         for (int i = 0; i < count; i++) {
-            UNode child = childNodeList.get(i);
+            WeightedNode child = childNodeList.get(i);
             if (child == node) {
                 childNodeList.remove(node);
                 i--;
@@ -244,7 +244,7 @@ public class UNode {
     public void removeNodeIfChildOfAnyDepthById(String id) {
         int count = childNodeList.size();
         for (int i = 0; i < count; i++) {
-            UNode child = childNodeList.get(i);
+            WeightedNode child = childNodeList.get(i);
             if (child.getId().equalsIgnoreCase(id)) {
                 childNodeList.remove(child);
                 i--;
@@ -263,13 +263,13 @@ public class UNode {
         this.miningProbability = miningProbability;
     }
 
-    public void getLeafNodeList(List<UNode> list) {
+    public void getLeafNodeList(List<WeightedNode> list) {
         if (childNodeList.isEmpty()) {
             list.add(this);
             return;
         } else {
             for (int i = 0; i < childNodeList.size(); i++) {
-                UNode child = childNodeList.get(i);
+                WeightedNode child = childNodeList.get(i);
                 child.getLeafNodeList(list);
             }
         }

@@ -20,21 +20,21 @@ import java.util.List;
 
 class HeaderTableItem {
     private String itemId;
-    private List<UNode> nodeList;
+    private List<WeightedNode> nodeList;
 
     HeaderTableItem(String itemId) {
         this.itemId = itemId;
-        nodeList = new ArrayList<UNode>();
+        nodeList = new ArrayList<WeightedNode>();
     }
 
     HeaderTableItem(String itemId, int nodeSize) {
         this.itemId = itemId;
-        nodeList = new ArrayList<UNode>(nodeSize);
+        nodeList = new ArrayList<WeightedNode>(nodeSize);
     }
 
 
-    void updateHeaderData(UNode uNode) {
-        nodeList.add(uNode);
+    void updateHeaderData(WeightedNode weightedNode) {
+        nodeList.add(weightedNode);
     }
 
     String getItemId() {
@@ -45,13 +45,13 @@ class HeaderTableItem {
         this.itemId = itemId;
     }
 
-    List<UNode> getNodeList() {
+    List<WeightedNode> getNodeList() {
         return nodeList;
     }
 
     double getItemPrefixValue() {
         double result = 0;
-        for (UNode node : nodeList) {
+        for (WeightedNode node : nodeList) {
             result = result + node.getNodePrefixValue();
         }
         return result;
@@ -59,7 +59,7 @@ class HeaderTableItem {
 
     double getItemProbabilityValue() {
         double result = 0;
-        for (UNode node : nodeList) {
+        for (WeightedNode node : nodeList) {
             result = result + node.getItemProbabilityValue();
 
         }
@@ -68,14 +68,14 @@ class HeaderTableItem {
 
     double getMiningValue() {
         double result = 0;
-        for (UNode node : nodeList) {
+        for (WeightedNode node : nodeList) {
             result = result + node.getMiningProbability();
 
         }
         return result;
     }
 
-    void setNodeList(List<UNode> nodeList) {
+    void setNodeList(List<WeightedNode> nodeList) {
         this.nodeList = nodeList;
     }
 
@@ -88,7 +88,7 @@ class HeaderTableItem {
                 .append("Data { ").append(Constant.TAB);
 
         int index = 0;
-        for (UNode node : nodeList) {
+        for (WeightedNode node : nodeList) {
             stringBuilder.append(Constant.HASH)
                     .append(node.toString()).append(Constant.TAB);
             index++;
@@ -97,7 +97,7 @@ class HeaderTableItem {
         return stringBuilder.toString();
     }
 
-    int getNodeIndex(UNode node) {
+    int getNodeIndex(WeightedNode node) {
         int index = -1;
         for (int i = 0; i < nodeList.size(); i++) {
             if (node == nodeList.get(i)) {
@@ -109,7 +109,7 @@ class HeaderTableItem {
         return index;
     }
 
-    void addNodeItem(UNode node, int index) {
+    void addNodeItem(WeightedNode node, int index) {
         //TODO: Later UPdate this in the table.
 //        if (nodeList.size() <= index) {
 //            for (int i = nodeList.size() - 1; i < index; i++) {

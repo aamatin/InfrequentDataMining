@@ -4,7 +4,7 @@ import com.mbzshajib.mining.Initializer;
 import com.mbzshajib.mining.exception.DataNotValidException;
 import com.mbzshajib.mining.processor.uncertain.mining.UncertainStreamMineInput;
 import com.mbzshajib.mining.processor.uncertain.mining.UncertainStreamMiner;
-import com.mbzshajib.mining.processor.uncertain.model.UncertainTree;
+import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
 import com.mbzshajib.mining.processor.uncertain.uncertaintree.TreeConstructionInput;
 import com.mbzshajib.mining.processor.uncertain.uncertaintree.TreeConstructionOutput;
 import com.mbzshajib.mining.processor.uncertain.uncertaintree.TreeGenerator;
@@ -35,7 +35,7 @@ public class MainClassTreeGeneration {
         TreeConstructionInput treeConstructionInput = getTreeInput();
         TreeGenerator processor = new TreeGenerator();
         TreeConstructionOutput treeConstructionOutput = processor.process(treeConstructionInput);
-        UncertainTree tree = treeConstructionOutput.getUncertainTree();
+        WeightedTree tree = treeConstructionOutput.getWeightedTree();
 
 
     }
@@ -43,7 +43,7 @@ public class MainClassTreeGeneration {
     private static UncertainStreamMineInput getMiningInput(TreeConstructionOutput treeConstructionOutput) {
         UncertainStreamMineInput result = new UncertainStreamMineInput();
         result.setMinSupport(MIN_SUP);
-        result.setUncertainTree(treeConstructionOutput.getUncertainTree());
+        result.setWeightedTree(treeConstructionOutput.getWeightedTree());
         return result;
     }
 

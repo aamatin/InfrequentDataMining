@@ -2,7 +2,7 @@ package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
 import com.mbzshajib.mining.exception.DataNotValidException;
 import com.mbzshajib.mining.processor.uncertain.model.WInputData;
-import com.mbzshajib.mining.processor.uncertain.model.UncertainTree;
+import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
 import com.mbzshajib.utility.model.ProcessingError;
 import com.mbzshajib.utility.model.Processor;
 
@@ -34,27 +34,27 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     @Override
     public TreeConstructionOutput process(TreeConstructionInput treeConstructionInput) throws ProcessingError {
         this.treeConstructionInput = treeConstructionInput;
-        UncertainTree uncertainTree = null;
+        WeightedTree weightedTree = null;
         try {
             initialize();
-            uncertainTree = new UncertainTree(treeConstructionInput.getFrameSize(), treeConstructionInput.getWindowSize());
+            weightedTree = new WeightedTree(treeConstructionInput.getFrameSize(), treeConstructionInput.getWindowSize());
             for (int frameNo = 0; frameNo < treeConstructionInput.getWindowSize(); frameNo++) {
                 for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                     List<WInputData> nodes = getTransaction();
-                    uncertainTree.addTransactionToTree(nodes, frameNo);
+                    weightedTree.addTransactionToTree(nodes, frameNo);
                 }
             }
-            treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(uncertainTree));
-            uncertainTree.slideWindowAndUpdateTree();
+            treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+            weightedTree.slideWindowAndUpdateTree();
             List<WInputData> nodes = null;
             int frameCounter = 0;
             while (!(nodes = getTransaction()).isEmpty()) {
                 if (!(frameCounter < treeConstructionInput.getWindowSize())) {
                     frameCounter = 0;
-                    treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(uncertainTree));
-                    uncertainTree.slideWindowAndUpdateTree();
+                    treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+                    weightedTree.slideWindowAndUpdateTree();
                 }
-                uncertainTree.addTransactionToTree(nodes, treeConstructionInput.getWindowSize() - 1);
+                weightedTree.addTransactionToTree(nodes, treeConstructionInput.getWindowSize() - 1);
                 frameCounter++;
 
             }
@@ -67,16 +67,16 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             e.printStackTrace();
         }
 
-        return createUpdate(uncertainTree);
+        return createUpdate(weightedTree);
     }
 
-    private TreeConstructionOutput createUpdate(UncertainTree uncertainTree) {
+    private TreeConstructionOutput createUpdate(WeightedTree weightedTree) {
         TreeConstructionOutput treeConstructionOutput = new TreeConstructionOutput();
         treeConstructionOutput.setStartTime(startTime);
         startTime = System.currentTimeMillis();
         treeConstructionOutput.setEndTime(System.currentTimeMillis());
         try {
-            treeConstructionOutput.setUncertainTree(uncertainTree.copy());
+            treeConstructionOutput.setWeightedTree(weightedTree.copy());
         } catch (DataNotValidException e) {
             e.printStackTrace();
         }

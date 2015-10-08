@@ -24,7 +24,7 @@ public class UNode {
     private int frameSize;
     private UNode parentNode;
     private List<UNode> childNodeList;
-    private List<UData> uncertainDataList;
+    private List<WData> uncertainDataList;
     private double miningProbability;
 
     private UNode() {
@@ -35,20 +35,20 @@ public class UNode {
         this.id = id;
         this.frameSize = frameSize;
         childNodeList = new ArrayList<UNode>();
-        uncertainDataList = new ArrayList<UData>(frameSize);
+        uncertainDataList = new ArrayList<WData>(frameSize);
         for (int i = 0; i < frameSize; i++) {
-            UData uData = new UData(0, 0);
-            uncertainDataList.add(i, uData);
+            WData wData = new WData(0, 0);
+            uncertainDataList.add(i, wData);
         }
     }
 
-    public void addUData(int frameNo, UData dataToBeAdded) throws DataNotValidException {
+    public void addUData(int frameNo, WData dataToBeAdded) throws DataNotValidException {
         if (frameNo >= frameSize) {
             throw new DataNotValidException("Frame no " + frameNo + " must be less than frame size " + frameSize + ".");
         }
-        UData uData = uncertainDataList.get(frameNo);
-        uData.setPrefixValue(uData.getPrefixValue() + dataToBeAdded.getPrefixValue());
-        uData.setItemProbability(uData.getItemProbability() + dataToBeAdded.getItemProbability());
+        WData wData = uncertainDataList.get(frameNo);
+        wData.setMaxValue(wData.getMaxValue() + dataToBeAdded.getMaxValue());
+        wData.setItemWeight(wData.getItemWeight() + dataToBeAdded.getItemWeight());
     }
 
     public void addChild(UNode childNode) {
@@ -96,9 +96,9 @@ public class UNode {
                     .append(Constant.TABBED_HASH)
                     .append(node.getId())
                     .append("[");
-            for (UData uData : node.getUncertainDataList()) {
+            for (WData wData : node.getUncertainDataList()) {
                 stringBuilder.append("{")
-                        .append("S-").append(uData.getItemProbability())
+                        .append("S-").append(wData.getItemWeight())
                         .append("}");
             }
             stringBuilder.append("]");
@@ -116,7 +116,7 @@ public class UNode {
 
     public void slide() {
         this.uncertainDataList.remove(this.uncertainDataList.get(0));
-        this.uncertainDataList.add(new UData(0, 0));
+        this.uncertainDataList.add(new WData(0, 0));
 
         for (UNode node : childNodeList) {
             node.slide();
@@ -125,8 +125,8 @@ public class UNode {
 
     public boolean removeNodeIfEmpty() {
         boolean isEmpty = true;
-        for (UData data : uncertainDataList) {
-            if (data.getPrefixValue() > 0) {
+        for (WData data : uncertainDataList) {
+            if (data.getMaxValue() > 0) {
                 isEmpty = false;
                 break;
             }
@@ -145,7 +145,7 @@ public class UNode {
         this.frameSize = frameSize;
     }
 
-    public void setUncertainDataList(List<UData> uncertainDataList) {
+    public void setUncertainDataList(List<WData> uncertainDataList) {
         this.uncertainDataList = uncertainDataList;
     }
 
@@ -153,7 +153,7 @@ public class UNode {
         return frameSize;
     }
 
-    public List<UData> getUncertainDataList() {
+    public List<WData> getUncertainDataList() {
         return uncertainDataList;
     }
 
@@ -172,11 +172,11 @@ public class UNode {
     private UNode copyNodes(UNode nodeToBeCopied, UNode parentNode) {
         UNode resultNode = new UNode(new String(nodeToBeCopied.getId()), nodeToBeCopied.getFrameSize());
         resultNode.setParentNode(parentNode);
-        List<UData> uDataList = new ArrayList<UData>();
-        for (UData uData : nodeToBeCopied.getUncertainDataList()) {
-            uDataList.add(uData.copy());
+        List<WData> wDataList = new ArrayList<WData>();
+        for (WData wData : nodeToBeCopied.getUncertainDataList()) {
+            wDataList.add(wData.copy());
         }
-        resultNode.setUncertainDataList(uDataList);
+        resultNode.setUncertainDataList(wDataList);
         for (int i = 0; i < nodeToBeCopied.getChildNodeList().size(); i++) {
             UNode node = nodeToBeCopied.getChildNodeList().get(i);
             UNode copiedNode = copyNodes(node, resultNode);
@@ -198,16 +198,16 @@ public class UNode {
 
     public double getNodePrefixValue() {
         double result = 0;
-        for (UData data : uncertainDataList) {
-            result = result + data.getPrefixValue();
+        for (WData data : uncertainDataList) {
+            result = result + data.getMaxValue();
         }
         return result;
     }
 
     public double getItemProbabilityValue() {
         double result = 0;
-        for (UData data : uncertainDataList) {
-            result = result + data.getItemProbability();
+        for (WData data : uncertainDataList) {
+            result = result + data.getItemWeight();
         }
         return result;
     }

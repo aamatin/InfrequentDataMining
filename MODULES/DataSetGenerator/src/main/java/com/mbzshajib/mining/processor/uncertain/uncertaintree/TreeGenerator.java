@@ -1,7 +1,7 @@
 package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
 import com.mbzshajib.mining.exception.DataNotValidException;
-import com.mbzshajib.mining.processor.uncertain.model.UInputData;
+import com.mbzshajib.mining.processor.uncertain.model.WInputData;
 import com.mbzshajib.mining.processor.uncertain.model.UncertainTree;
 import com.mbzshajib.utility.model.ProcessingError;
 import com.mbzshajib.utility.model.Processor;
@@ -40,13 +40,13 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             uncertainTree = new UncertainTree(treeConstructionInput.getFrameSize(), treeConstructionInput.getWindowSize());
             for (int frameNo = 0; frameNo < treeConstructionInput.getWindowSize(); frameNo++) {
                 for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
-                    List<UInputData> nodes = getTransaction();
+                    List<WInputData> nodes = getTransaction();
                     uncertainTree.addTransactionToTree(nodes, frameNo);
                 }
             }
             treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(uncertainTree));
             uncertainTree.slideWindowAndUpdateTree();
-            List<UInputData> nodes = null;
+            List<WInputData> nodes = null;
             int frameCounter = 0;
             while (!(nodes = getTransaction()).isEmpty()) {
                 if (!(frameCounter < treeConstructionInput.getWindowSize())) {
@@ -95,33 +95,51 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     }
 
 
-    private List<UInputData> getTransaction() throws IOException, DataNotValidException {
+    private List<WInputData> getTransaction() throws IOException, DataNotValidException {
         String line = bufferedReader.readLine();
         if (line == null) {
             bufferedReader.close();
             return Collections.emptyList();
         }
 
-        List<UInputData> uNodeList = new ArrayList<UInputData>();
+        List<WInputData> uiInputList = new ArrayList<WInputData>();
 
         String[] transactionItems = line.split(" ");
-        String id = transactionItems[0].split("-")[0];
-        double probability = Double.parseDouble(transactionItems[0].split("-")[1]);
-        UInputData firstNode = new UInputData(id, probability);
-        double maxProbability = firstNode.getItemPValue();
-        firstNode.setPrefixValue(maxProbability);
-        uNodeList.add(firstNode);
-        for (int i = 1; i < transactionItems.length; i++) {
-            String tmpId = transactionItems[i].split("-")[0];
-            double tmpPValue = Double.parseDouble(transactionItems[i].split("-")[1]);
-            UInputData data = new UInputData(tmpId, tmpPValue);
-            double prefixValueToBeAssigned = maxProbability * data.getItemPValue();
-            data.setPrefixValue(prefixValueToBeAssigned);
-            uNodeList.add(data);
-            if (maxProbability < data.getItemPValue()) {
-                maxProbability = data.getItemPValue();
+        for (int i = 0; i < transactionItems.length; i++) {
+            String[] tmp = transactionItems[i].split("-");
+            String id = tmp[0];
+            int weight = Integer.parseInt(tmp[1]);
+            WInputData inputData = new WInputData(id, weight);
+            uiInputList.add(inputData);
+        }
+        int max = findMax(uiInputList);
+        updateMax(uiInputList, max);
+        removeEmpty(uiInputList);
+        return uiInputList;
+    }
+
+    private void removeEmpty(List<WInputData> uiInputList) {
+        for (int i = 0; i < uiInputList.size(); i++) {
+            WInputData data = uiInputList.get(i);
+            if (data.getItemWeight() == 0) {
+                uiInputList.remove(data);
             }
         }
-        return uNodeList;
+    }
+
+    private void updateMax(List<WInputData> uiInputList, int max) {
+        for (WInputData data : uiInputList) {
+            data.setMaxValue(max);
+        }
+    }
+
+    private int findMax(List<WInputData> uiInputList) {
+        int result = 0;
+        for (WInputData data : uiInputList) {
+            if (data.getItemWeight() > result) {
+                result = data.getItemWeight();
+            }
+        }
+        return result;
     }
 }

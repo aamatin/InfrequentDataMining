@@ -49,9 +49,9 @@ public class MainClassTreeGeneration {
 
     private static TreeConstructionInput getTreeInput() {
         final TreeConstructionInput treeConstructionInput = new TreeConstructionInput();
-        treeConstructionInput.setInputFilePath("INPUT/puff_tree_dataset.txt");
-        treeConstructionInput.setFrameSize(1);
-        treeConstructionInput.setWindowSize(4);
+        treeConstructionInput.setInputFilePath("INPUT/cpu_data.dat");
+        treeConstructionInput.setFrameSize(2);
+        treeConstructionInput.setWindowSize(3);
         treeConstructionInput.setWindowCompletionCallback(new WindowCompletionCallback() {
             @Override
             public void sendUpdate(TreeConstructionOutput treeConstructionOutput) throws ProcessingError {

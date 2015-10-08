@@ -10,14 +10,14 @@ package com.mbzshajib.mining.processor.uncertain.model;
  * ****************************************************************
  */    
 
-public class UInputData {
+public class WInputData {
   private String id ;
-  private double prefixValue;
-  private double itemPValue;
+     private int itemWeight;
+     private int maxValue;
 
-  public UInputData(String id, double itemPValue) {
+  public WInputData(String id, int itemWeight) {
    this.id = id;
-   this.itemPValue = itemPValue;
+   this.itemWeight = itemWeight;
   }
 
   public String getId() {
@@ -28,19 +28,19 @@ public class UInputData {
    this.id = id;
   }
 
-  public double getPrefixValue() {
-   return prefixValue;
+  public int getMaxValue() {
+   return maxValue;
   }
 
-  public void setPrefixValue(double prefixValue) {
-   this.prefixValue = prefixValue;
+  public void setMaxValue(int maxValue) {
+   this.maxValue = maxValue;
   }
 
-  public double getItemPValue() {
-   return itemPValue;
+  public int getItemWeight() {
+   return itemWeight;
   }
 
-  public void setItemPValue(double itemPValue) {
-   this.itemPValue = itemPValue;
+  public void setItemWeight(int itemWeight) {
+   this.itemWeight = itemWeight;
   }
  }

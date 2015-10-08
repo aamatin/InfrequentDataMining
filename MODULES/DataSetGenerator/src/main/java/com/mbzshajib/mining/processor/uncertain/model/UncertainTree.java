@@ -55,13 +55,33 @@ public class UncertainTree {
         return headerTable;
     }
 
-    public void addTransactionToTree(List<UInputData> uInputData, int frameNo) throws DataNotValidException {
+    public void addTransactionToTree(List<WInputData> wInputData, int frameNo) throws DataNotValidException {
         UNode parentNode = rootNode;
-        for (UInputData inputData : uInputData) {
+        for (WInputData inputData : wInputData) {
             parentNode = addNode(inputData, parentNode, frameNo);
         }
     }
-
+    private UNode addNode(WInputData wInputData, UNode parentNode, int frameNo) throws DataNotValidException {
+        int foundIndex = -1;
+        for (int i = 0; i < parentNode.getChildNodeList().size(); i++) {
+            if (parentNode.getChildNodeList().get(i).isSameId(wInputData.getId())) {
+                foundIndex = i;
+            }
+        }
+        if (foundIndex == -1) {
+            UNode node = new UNode(wInputData.getId(), windowSize);
+            parentNode.addChild(node);
+            headerTable.updateHeaderTable(node);
+            WData wData = new WData(wInputData.getItemWeight(), wInputData.getMaxValue());
+            node.addUData(frameNo, wData);
+            return node;
+        } else {
+            UNode tmpNode = parentNode.getChildNodeList().get(foundIndex);
+            WData wData = new WData(wInputData.getItemWeight(), wInputData.getMaxValue());
+            tmpNode.addUData(frameNo, wData);
+            return tmpNode;
+        }
+    }
     public void slideWindowAndUpdateTree() {
         removeOneFrameOldestData(rootNode);
         headerTable.slideHeaderTable();
@@ -90,27 +110,7 @@ public class UncertainTree {
         }
     }
 
-    private UNode addNode(UInputData uInputData, UNode parentNode, int frameNo) throws DataNotValidException {
-        int foundIndex = -1;
-        for (int i = 0; i < parentNode.getChildNodeList().size(); i++) {
-            if (parentNode.getChildNodeList().get(i).isSameId(uInputData.getId())) {
-                foundIndex = i;
-            }
-        }
-        if (foundIndex == -1) {
-            UNode node = new UNode(uInputData.getId(), windowSize);
-            parentNode.addChild(node);
-            headerTable.updateHeaderTable(node);
-            UData uData = new UData(uInputData.getItemPValue(), uInputData.getPrefixValue());
-            node.addUData(frameNo, uData);
-            return node;
-        } else {
-            UNode tmpNode = parentNode.getChildNodeList().get(foundIndex);
-            UData uData = new UData(uInputData.getItemPValue(), uInputData.getPrefixValue());
-            tmpNode.addUData(frameNo, uData);
-            return tmpNode;
-        }
-    }
+
 
     public void setRootNode(UNode rootNode) {
         this.rootNode = rootNode;

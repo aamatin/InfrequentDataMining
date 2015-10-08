@@ -23,7 +23,7 @@ public class Initializer {
     private static Configurations configuration;
 
     public static void initialize() throws IOException {
-        loadProperties();
+//        loadProperties();
     }
 
     private static void loadProperties() throws IOException {

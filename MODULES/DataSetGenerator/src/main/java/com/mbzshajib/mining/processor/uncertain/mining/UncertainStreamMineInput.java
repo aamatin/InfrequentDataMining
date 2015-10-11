@@ -16,15 +16,15 @@ import com.mbzshajib.utility.model.Input;
  */
 
 public class UncertainStreamMineInput implements Input {
-    private double minSupport;
+    private int maxSupport;
     private WeightedTree weightedTree;
 
-    public double getMinSupport() {
-        return minSupport;
+    public int getMaxSupport() {
+        return maxSupport;
     }
 
-    public void setMinSupport(double minSupport) {
-        this.minSupport = minSupport;
+    public void setMaxSupport(int maSupport) {
+        this.maxSupport = maSupport;
     }
 
     public WeightedTree getWeightedTree() {

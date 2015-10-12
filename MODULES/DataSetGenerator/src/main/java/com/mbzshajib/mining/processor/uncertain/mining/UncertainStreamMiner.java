@@ -124,7 +124,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         return result;
     }
 
-
+// problem with Mining
     private void updateMiningProbability(List<WeightedNode> leafNodeList) {
         for (WeightedNode leafNode : leafNodeList) {
             updateParentMiningData(leafNode);

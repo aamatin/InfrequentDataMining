@@ -31,9 +31,7 @@ public class InfrequentItem {
 
 
             }
-            if (!found) {
-                inFrequentSet.add(new String(itemId));
-            }
+            if (!found) inFrequentSet.add(new String(itemId));
         }
 
 

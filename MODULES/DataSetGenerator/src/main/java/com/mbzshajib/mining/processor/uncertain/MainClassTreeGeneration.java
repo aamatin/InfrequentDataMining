@@ -27,7 +27,8 @@ import java.io.IOException;
 
 public class MainClassTreeGeneration {
     public static final String TAG = MainClassTreeGeneration.class.getCanonicalName();
-    private static final int MAX_SUP = 250;
+
+    private static final int MIN_SUP = 150;
     private static int windowNumber = 1;
 
     public static void main(String[] args) throws ProcessingError, IOException, DataNotValidException {
@@ -42,7 +43,7 @@ public class MainClassTreeGeneration {
 
     private static UncertainStreamMineInput getMiningInput(TreeConstructionOutput treeConstructionOutput) {
         UncertainStreamMineInput result = new UncertainStreamMineInput();
-        result.setMaxSupport(MAX_SUP);
+        result.setMaxSupport(MIN_SUP);
         result.setWeightedTree(treeConstructionOutput.getWeightedTree());
         return result;
     }

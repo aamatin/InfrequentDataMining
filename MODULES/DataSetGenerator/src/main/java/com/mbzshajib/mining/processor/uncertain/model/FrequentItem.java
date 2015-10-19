@@ -17,6 +17,7 @@ import java.util.List;
 
 public class FrequentItem {
     private List<String> frequentSet;
+    private List<String> inFrequentSet;
 
 
     public FrequentItem() {
@@ -42,6 +43,21 @@ public class FrequentItem {
         }
         if (!found) {
             frequentSet.add(new String(itemId));
+        }
+    }
+
+    public void addInfrequent(String itemId) {
+        boolean found = false;
+        for (String id : inFrequentSet) {
+            if (id.equals(itemId)) {
+                found = true;
+                break;
+            }
+
+
+        }
+        if (!found) {
+            inFrequentSet.add(new String(itemId));
         }
     }
 

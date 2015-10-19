@@ -26,16 +26,16 @@ import java.util.List;
 
 public class UncertainStreamMiner implements Processor<UncertainStreamMineInput, UncertainStreamMineOutput> {
     public static final String TAG = UncertainStreamMiner.class.getCanonicalName();
-    private List<InfrequentItem> inFrequentItemList;
+    private List<FrequentItem> frequentItemList;
 
     @Override
     public UncertainStreamMineOutput process(UncertainStreamMineInput uncertainStreamMineInput) throws ProcessingError {
-        inFrequentItemList = new ArrayList<InfrequentItem>();
+        frequentItemList = new ArrayList<FrequentItem>();
         WeightedTree weightedTree = uncertainStreamMineInput.getWeightedTree();
         System.out.println(weightedTree.getTraversedString());
-        int maxSupport = uncertainStreamMineInput.getMaxSupport();
+        int minSupport = uncertainStreamMineInput.getMinSupport();
         try {
-            startMining(weightedTree, maxSupport);
+            startMining(weightedTree, minSupport);
         } catch (DataNotValidException e) {
             throw new ProcessingError(e);
         }
@@ -54,9 +54,9 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         int count = 1;
         builder.append("Total Frequent Items ")
                 .append(Constant.TABBED_HASH)
-                .append(inFrequentItemList.size())
+                .append(frequentItemList.size())
                 .append(Constant.NEW_LINE);
-        for (InfrequentItem item : inFrequentItemList) {
+        for (FrequentItem item : frequentItemList) {
             builder.append(count)
                     .append(item.traverse())
                     .append(Constant.NEW_LINE);
@@ -64,53 +64,124 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         System.out.println(builder.toString());
     }
 
-    private void startMining(WeightedTree weightedTree, int maxSupport) throws DataNotValidException {
+    private void startMining(WeightedTree weightedTree, int minSupport) throws DataNotValidException {
         WeightedNode rootNode = weightedTree.getRootNode();
         List<WeightedNode> leafNodeList = new ArrayList<WeightedNode>();
         rootNode.getLeafNodeList(leafNodeList);
-        HeaderTable headerTable = weightedTree.getHeaderTable();
-        int windowSize = headerTable.getWindowSize();
-        List<HTableItemInfo> inFrequentItemsInfo = getInfrequentItemInfoFromHeader(headerTable, maxSupport);
-        //TODO:Remove data below support(Probability & Prefix Value).
-        removeFrequentData(rootNode, headerTable, inFrequentItemsInfo, windowSize);
-        List<HTableItemInfo> listToBeMined = headerTable.getFrequentItemInfoByPrefix(maxSupport);
-//        sortByPrefix(listToBeMined);
-        //TODO:LOOP
-        for (int loopCounter = listToBeMined.size() - 1; loopCounter >= 0; loopCounter--) {
-            WeightedNode tmpNode = rootNode.copy();
-            InfrequentItem inFrequentItem = new InfrequentItem();
-            inFrequentItem.addInfrequentItem(listToBeMined.get(loopCounter).getItemId());
-            inFrequentItemList.add(inFrequentItem);
-            mine(tmpNode, inFrequentItem, windowSize, listToBeMined.get(loopCounter).getItemId(), maxSupport, false);
+        for(int i =0;i<leafNodeList.size();i++){
+            WeightedNode node  = leafNodeList.get(i);
+            removeFrequentItem(node, minSupport);
+            FrequentItem frequentItem = new FrequentItem();
+            List<WData> uncertainDataList = node.getUncertainDataList();
+//            int total =0;
+//            for (WData data:uncertainDataList){
+//                total+=data.getItemWeight();
+//            }
+//            if(total>minSupport){
+//                WeightedNode parentNode = node.getParentNode();
+//                parentNode.getChildNodeList().remove(node);
+//            }
+//            for (WData data:uncertainDataList){
+//
+//
+//            }
+            mine(rootNode,frequentItem, weightedTree.getWindowSize(), node.getId(), minSupport, false);
         }
+        //TODO: generate
+
+
+//        HeaderTable headerTable = generateHeaderTableForCondTree(rootNode, weightedTree.getWindowSize());
+//        List<HTableItemInfo> frequentItemInfoByPrefix = headerTable.getFrequentItemInfoByPrefix(minSupport);
+//        headerTable = removeInfrequentData(rootNode, headerTable, frequentItemInfoByPrefix, weightedTree.getWindowSize());
+//        for (WeightedNode node : leafNodeList) {
+//            WeightedNode nodeToBeMinned = rootNode.copy();
+//            FrequentItem frequentItem = new FrequentItem();
+//            frequentItem.addFrequentItem(node.getId());
+//            frequentItemList.add(frequentItem);
+//
+//            mine(nodeToBeMinned, frequentItem, weightedTree.getWindowSize(), nodeToBeMinned.getId(), minSupport, false);
+//
+//        }
+//        HeaderTable headerTable = weightedTree.getHeaderTable();
+//        int windowSize = headerTable.getWindowSize();
+//        List<HTableItemInfo> inFrequentItemsInfo = getInfrequentItemInfoFromHeader(headerTable, minSupport);
+//        //TODO:Remove data below support(Probability & Prefix Value).
+//        removeInfrequentData(rootNode, headerTable, inFrequentItemsInfo, windowSize);
+//        List<HTableItemInfo> listToBeMined = headerTable.getFrequentItemInfoByPrefix(minSupport);
+////        sortByPrefix(listToBeMined);
+//        //TODO:LOOP
+//        for (int loopCounter = listToBeMined.size() - 1; loopCounter >= 0; loopCounter--) {
+//            WeightedNode tmpNode = rootNode.copy();
+//            FrequentItem frequentItem = new FrequentItem();
+//            frequentItem.addFrequentItem(listToBeMined.get(loopCounter).getItemId());
+//            frequentItemList.add(frequentItem);
+//            mine(tmpNode, frequentItem, windowSize, listToBeMined.get(loopCounter).getItemId(), minSupport, false);
+//        }
 
 
     }
 
-    private void mine(WeightedNode root, InfrequentItem item, int windowSize, String id, double minSupport, boolean isFirstIteration) throws DataNotValidException {
-        item.addInfrequentItem(id);
-        if (isFirstIteration) {
-            inFrequentItemList.add(item);
+    private void removeFrequentItem(WeightedNode node, int min_support) {
+
+        while(!node.getId().equals('0'))
+        {
+            if(node.getItemProbabilityValue() > min_support) {
+                WeightedNode tempNode = node.getParentNode();
+                tempNode.getChildNodeList().remove(node);
+//              tempNode_value = getMiningProbability()
+                removeFrequentItem(node, min_support);
+            }
         }
-        item = new InfrequentItem(item);
+    }
+
+
+//    private void miningProcess(WeightedNode root, FrequentItem item, int windowSize, String id, int minSupport, boolean isFirstIteration) throws DataNotValidException {
+//        item.addFrequentItem(id);
+//        if(isFirstIteration){
+//            frequentItemList.add(item);
+//        }
+//        item = new FrequentItem(item);
+//        constructConditionalTreeNotRemovingChild(root, id);
+//        removeInfrequentItemNodes(root, id);
+//        List<WeightedNode> leafNodeList = new ArrayList<WeightedNode>();
+//        root.getLeafNodeList(leafNodeList);
+//        updateMiningProbability(leafNodeList);
+//        HeaderTable headerTable = generateHeaderTableForCondTree(root, windowSize);
+//        List<HTableItemInfo> inFrequentItemsInfo = getInfrequentItemInfoForMining(headerTable, minSupport);
+//        updateFrequentItem(root, item);
+//        List<HTableItemInfo> headerItemInfo = headerTable.getHeaderItemInfo();
+//        for (int i = headerItemInfo.size() - 1; i > 0; i--) {
+//            item = new FrequentItem(item);
+//            miningProcess(root, item, windowSize, headerItemInfo.get(i).getItemId(), minSupport, false);
+//        }
+//
+//    }
+
+
+    private void mine(WeightedNode root, FrequentItem item, int windowSize, String id, int minSupport, boolean isFirstIteration) throws DataNotValidException {
+        item.addFrequentItem(id);
+        if (isFirstIteration) {
+            frequentItemList.add(item);
+        }
+        item = new FrequentItem(item);
 
         constructConditionalTreeNotRemovingChild(root, id);
-        removeFrequentItemNodes(root, id);
+        removeInfrequentItemNodes(root, id);
         List<WeightedNode> leafNodeList = new ArrayList<WeightedNode>();
         root.getLeafNodeList(leafNodeList);
         updateMiningProbability(leafNodeList);
         HeaderTable headerTable = generateHeaderTableForCondTree(root, windowSize);
         List<HTableItemInfo> inFrequentItemsInfo = getInfrequentItemInfoForMining(headerTable, minSupport);
-        headerTable = removeFrequentData(root, headerTable, inFrequentItemsInfo, windowSize);
-        updateInfrequentItem(root, item);
+        headerTable = removeInfrequentData(root, headerTable, inFrequentItemsInfo, windowSize);
+        updateFrequentItem(root, item);
         List<HTableItemInfo> headerItemInfo = headerTable.getHeaderItemInfo();
         for (int i = headerItemInfo.size() - 1; i > 0; i--) {
-            item = new InfrequentItem(item);
+            item = new FrequentItem(item);
             mine(root, item, windowSize, headerItemInfo.get(i).getItemId(), minSupport, false);
         }
     }
 
-    private List<HTableItemInfo> getInfrequentItemInfoForMining(HeaderTable headerTable, double minSupport) {
+    private List<HTableItemInfo> getInfrequentItemInfoForMining(HeaderTable headerTable, int minSupport) {
         List<HTableItemInfo> inFrequentItemInfoByMiningValue = headerTable.getInFrequentItemInfoByMiningValue(minSupport);
         return inFrequentItemInfoByMiningValue;
     }
@@ -124,7 +195,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         return result;
     }
 
-// problem with Mining
+
     private void updateMiningProbability(List<WeightedNode> leafNodeList) {
         for (WeightedNode leafNode : leafNodeList) {
             updateParentMiningData(leafNode);
@@ -142,26 +213,26 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         }
     }
 
-    private HeaderTable removeFrequentData(WeightedNode node, HeaderTable headerTable, List<HTableItemInfo> FrequentItemInfoByPrefix, int windowSize) throws DataNotValidException {
-        for (HTableItemInfo hTableItemInfo : FrequentItemInfoByPrefix) {
-            removeFrequentItemNodes(node, hTableItemInfo.getItemId());
+    private HeaderTable removeInfrequentData(WeightedNode node, HeaderTable headerTable, List<HTableItemInfo> inFrequentItemInfoByPrefix, int windowSize) throws DataNotValidException {
+        for (HTableItemInfo hTableItemInfo : inFrequentItemInfoByPrefix) {
+            removeInfrequentItemNodes(node, hTableItemInfo.getItemId());
             headerTable = generateHeaderTableForCondTree(node, windowSize);
         }
         return headerTable;
     }
 
-    private void updateInfrequentItem(WeightedNode rootNode, InfrequentItem item) {
+    private void updateFrequentItem(WeightedNode rootNode, FrequentItem item) {
 
         for (int i = 0; i < rootNode.getChildNodeList().size(); i++) {
             WeightedNode child = rootNode.getChildNodeList().get(i);
-            InfrequentItem tmpItem = new InfrequentItem(item);
-            tmpItem.addInfrequentItem(child.getId());
-            inFrequentItemList.add(tmpItem);
-            updateInfrequentItem(child, item);
+            FrequentItem tmpItem = new FrequentItem(item);
+            tmpItem.addFrequentItem(child.getId());
+            frequentItemList.add(tmpItem);
+            updateFrequentItem(child, item);
         }
     }
 
-    private void removeFrequentItemNodes(WeightedNode rootNode, String itemId) {
+    private void removeInfrequentItemNodes(WeightedNode rootNode, String itemId) {
         rootNode.removeNodeIfChildOfAnyDepthById(itemId);
     }
 

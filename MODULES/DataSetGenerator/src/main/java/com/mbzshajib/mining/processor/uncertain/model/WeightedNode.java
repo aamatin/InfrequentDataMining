@@ -25,7 +25,7 @@ public class WeightedNode {
     private WeightedNode parentNode;
     private List<WeightedNode> childNodeList;
     private List<WData> uncertainDataList;
-    private double miningProbability;
+    private int miningProbability;
 
     private WeightedNode() {
 
@@ -196,8 +196,8 @@ public class WeightedNode {
                 '}';
     }
 
-    public double getNodePrefixValue() {
-        double result = 0;
+    public int getNodePrefixValue() {
+        int result = 0;
         for (WData data : uncertainDataList) {
             result = result + data.getMaxValue();
         }
@@ -255,11 +255,11 @@ public class WeightedNode {
         }
     }
 
-    public double getMiningProbability() {
+    public int getMiningProbability() {
         return miningProbability;
     }
 
-    public void setMiningProbability(double miningProbability) {
+    public void setMiningProbability(int miningProbability) {
         this.miningProbability = miningProbability;
     }
 

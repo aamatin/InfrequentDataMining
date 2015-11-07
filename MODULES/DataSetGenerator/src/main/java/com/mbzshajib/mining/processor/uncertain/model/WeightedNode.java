@@ -25,6 +25,8 @@ public class WeightedNode {
     private WeightedNode parentNode;
     private List<WeightedNode> childNodeList;
     private List<WData> uncertainDataList;
+    private int nodeWeight;
+    // TODO - no need
     private int miningProbability;
 
     private WeightedNode() {
@@ -80,6 +82,16 @@ public class WeightedNode {
         this.childNodeList = childNodeList;
     }
 
+    public int getNodeWeight() {
+        int weight = 0;
+        for(WData wData : uncertainDataList){
+            weight+=wData.getMaxValue();
+        }
+        return weight;
+    }
+
+
+
     public String traverse() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Constant.NEW_LINE)
@@ -98,7 +110,7 @@ public class WeightedNode {
                     .append("[");
             for (WData wData : node.getUncertainDataList()) {
                 stringBuilder.append("{")
-                        .append("S-").append(wData.getItemWeight())
+                        .append("S-").append(wData.getMaxValue())
                         .append("}");
             }
             stringBuilder.append("]");

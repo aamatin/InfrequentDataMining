@@ -1,6 +1,7 @@
 package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
 import com.mbzshajib.mining.exception.DataNotValidException;
+import com.mbzshajib.mining.processor.uncertain.mining.UncertainStreamMineOutput;
 import com.mbzshajib.mining.processor.uncertain.model.WInputData;
 import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
 import com.mbzshajib.utility.model.ProcessingError;
@@ -33,27 +34,36 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
 
     @Override
     public TreeConstructionOutput process(TreeConstructionInput treeConstructionInput) throws ProcessingError {
+        int windowSize = treeConstructionInput.getWindowSize() * treeConstructionInput.getFrameSize();
         this.treeConstructionInput = treeConstructionInput;
         WeightedTree weightedTree = null;
+        int windowStartTransaction = 1;
+        int windowEndTransaction;
         try {
             initialize();
             weightedTree = new WeightedTree(treeConstructionInput.getFrameSize(), treeConstructionInput.getWindowSize());
+            windowEndTransaction = windowSize;
             for (int frameNo = 0; frameNo < treeConstructionInput.getWindowSize(); frameNo++) {
                 for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                     List<WInputData> nodes = getTransaction();
                     weightedTree.addTransactionToTree(nodes, frameNo);
                 }
             }
-            treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+            UncertainStreamMineOutput uncertainStreamMineOutput = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+
+
+            getWindowPatterns( windowStartTransaction, windowEndTransaction, treeConstructionInput.getInputFilePath());
+
+
             weightedTree.slideWindowAndUpdateTree();
             List<WInputData> nodes = null;
             int frameCounter = 0;
             while (!(nodes = getTransaction()).isEmpty()) {
-                if (!(frameCounter < treeConstructionInput.getWindowSize())) {
+                if (!(frameCounter < treeConstructionInput.getFrameSize())) {
                     frameCounter = 0;
                     treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
                     weightedTree.slideWindowAndUpdateTree();
-                }
+                 }
                 weightedTree.addTransactionToTree(nodes, treeConstructionInput.getWindowSize() - 1);
                 frameCounter++;
 
@@ -68,6 +78,13 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
         }
 
         return createUpdate(weightedTree);
+    }
+
+    private void getWindowPatterns(int windowStartTransaction, int windowEndTransaction, String inputFilePath) throws IOException {
+       BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(treeConstructionInput.getInputFilePath())));
+        for(int i = 1;i<windowStartTransaction;i++){
+            bufferedReader.readLine();
+        }
     }
 
     private TreeConstructionOutput createUpdate(WeightedTree weightedTree) {
@@ -136,9 +153,10 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     private int findMax(List<WInputData> uiInputList) {
         int result = 0;
         for (WInputData data : uiInputList) {
-            if (data.getItemWeight() > result) {
-                result = data.getItemWeight();
-            }
+//            if (data.getItemWeight() > result) {
+//                result = data.getItemWeight();
+//            }
+            result += data.getItemWeight();
         }
         return result;
     }

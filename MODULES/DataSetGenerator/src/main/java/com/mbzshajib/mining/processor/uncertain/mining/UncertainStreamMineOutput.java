@@ -1,5 +1,7 @@
 package com.mbzshajib.mining.processor.uncertain.mining;
 
+import com.mbzshajib.mining.processor.uncertain.model.FrequentItem;
+import com.mbzshajib.mining.processor.uncertain.model.ItemSet;
 import com.mbzshajib.utility.model.Output;
 
 /**
@@ -15,4 +17,22 @@ import com.mbzshajib.utility.model.Output;
  */
 
 public class UncertainStreamMineOutput implements Output {
+    ItemSet itemSet;
+    int maxSupport;
+
+    public ItemSet getItemSet() {
+        return itemSet;
+    }
+
+    public void setItemSet(ItemSet itemSet) {
+        this.itemSet = itemSet;
+    }
+
+    public int getMaxSupport() {
+        return maxSupport;
+    }
+
+    public void setMaxSupport(int maxSupport) {
+        this.maxSupport = maxSupport;
+    }
 }

@@ -1,5 +1,6 @@
 package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
+import com.mbzshajib.mining.processor.uncertain.mining.UncertainStreamMineOutput;
 import com.mbzshajib.utility.model.ProcessingError;
 
 /**
@@ -15,5 +16,5 @@ import com.mbzshajib.utility.model.ProcessingError;
 
 
 public interface WindowCompletionCallback {
-    void sendUpdate(TreeConstructionOutput treeConstructionOutput) throws ProcessingError;
+    UncertainStreamMineOutput sendUpdate(TreeConstructionOutput treeConstructionOutput) throws ProcessingError;
 }

@@ -33,14 +33,20 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         frequentItemList = new ArrayList<FrequentItem>();
         WeightedTree weightedTree = uncertainStreamMineInput.getWeightedTree();
         System.out.println(weightedTree.getTraversedString());
-        int minSupport = uncertainStreamMineInput.getMinSupport();
-        try {
-            startMining(weightedTree, minSupport);
-        } catch (DataNotValidException e) {
-            throw new ProcessingError(e);
-        }
-        printOutput();
-        return null;
+
+        InfrequentWeightedItemSetMining itemSetMining = new InfrequentWeightedItemSetMining();
+        ItemSet itemSet = itemSetMining.mineWeightedTree(weightedTree);
+
+        UncertainStreamMineOutput uncertainStreamMineOutput = new UncertainStreamMineOutput();
+        uncertainStreamMineOutput.setItemSet(itemSet);
+//        int minSupport = uncertainStreamMineInput.getMinSupport();
+//        try {
+//            startMining(weightedTree, minSupport);
+//        } catch (DataNotValidException e) {
+//            throw new ProcessingError(e);
+//        }
+//        printOutput();
+        return uncertainStreamMineOutput;
 //        printBeforeMining(weightedTree);
 //        WeightedNode rootNode = weightedTree.getRootNode();
 //        HeaderTable headerTable = weightedTree.getHeaderTable();
@@ -68,9 +74,9 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         WeightedNode rootNode = weightedTree.getRootNode();
         List<WeightedNode> leafNodeList = new ArrayList<WeightedNode>();
         rootNode.getLeafNodeList(leafNodeList);
-        for(int i =0;i<leafNodeList.size();i++){
-            WeightedNode node  = leafNodeList.get(i);
-            removeFrequentItem(node, minSupport);
+        for (int i = 0; i < leafNodeList.size(); i++) {
+            WeightedNode node = leafNodeList.get(i);
+            //removeFrequentItem(node, minSupport);
             FrequentItem frequentItem = new FrequentItem();
             List<WData> uncertainDataList = node.getUncertainDataList();
 //            int total =0;
@@ -85,7 +91,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 //
 //
 //            }
-            mine(rootNode,frequentItem, weightedTree.getWindowSize(), node.getId(), minSupport, false);
+            mine(rootNode, frequentItem, weightedTree.getWindowSize(), node.getId(), minSupport, false);
         }
         //TODO: generate
 
@@ -123,9 +129,8 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 
     private void removeFrequentItem(WeightedNode node, int min_support) {
 
-        while(!node.getId().equals('0'))
-        {
-            if(node.getItemProbabilityValue() > min_support) {
+        while (!node.getId().equals('0')) {
+            if (node.getItemProbabilityValue() > min_support) {
                 WeightedNode tempNode = node.getParentNode();
                 tempNode.getChildNodeList().remove(node);
 //              tempNode_value = getMiningProbability()
@@ -135,27 +140,24 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
     }
 
 
-//    private void miningProcess(WeightedNode root, FrequentItem item, int windowSize, String id, int minSupport, boolean isFirstIteration) throws DataNotValidException {
-//        item.addFrequentItem(id);
-//        if(isFirstIteration){
-//            frequentItemList.add(item);
-//        }
-//        item = new FrequentItem(item);
-//        constructConditionalTreeNotRemovingChild(root, id);
-//        removeInfrequentItemNodes(root, id);
-//        List<WeightedNode> leafNodeList = new ArrayList<WeightedNode>();
-//        root.getLeafNodeList(leafNodeList);
-//        updateMiningProbability(leafNodeList);
-//        HeaderTable headerTable = generateHeaderTableForCondTree(root, windowSize);
-//        List<HTableItemInfo> inFrequentItemsInfo = getInfrequentItemInfoForMining(headerTable, minSupport);
-//        updateFrequentItem(root, item);
-//        List<HTableItemInfo> headerItemInfo = headerTable.getHeaderItemInfo();
-//        for (int i = headerItemInfo.size() - 1; i > 0; i--) {
-//            item = new FrequentItem(item);
-//            miningProcess(root, item, windowSize, headerItemInfo.get(i).getItemId(), minSupport, false);
-//        }
-//
-//    }
+    private void miningProcess(WeightedNode root, FrequentItem item, int windowSize, String id, int minSupport, boolean isFirstIteration) throws DataNotValidException {
+        item.addFrequentItem(id);
+        if (isFirstIteration) {
+            frequentItemList.add(item);
+        }
+        item = new FrequentItem(item);
+        constructConditionalTree(root);
+
+    }
+
+    private WeightedNode constructConditionalTree(WeightedNode root) {
+
+        WeightedNode miningTree;
+        List<WeightedNode> leafNodeList = new ArrayList<WeightedNode>();
+        root.getLeafNodeList(leafNodeList);
+
+        return null;
+    }
 
 
     private void mine(WeightedNode root, FrequentItem item, int windowSize, String id, int minSupport, boolean isFirstIteration) throws DataNotValidException {
@@ -166,14 +168,14 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         item = new FrequentItem(item);
 
         constructConditionalTreeNotRemovingChild(root, id);
-        removeInfrequentItemNodes(root, id);
+//        removeInfrequentItemNodes(root, id);
         List<WeightedNode> leafNodeList = new ArrayList<WeightedNode>();
         root.getLeafNodeList(leafNodeList);
         updateMiningProbability(leafNodeList);
         HeaderTable headerTable = generateHeaderTableForCondTree(root, windowSize);
         List<HTableItemInfo> inFrequentItemsInfo = getInfrequentItemInfoForMining(headerTable, minSupport);
-        headerTable = removeInfrequentData(root, headerTable, inFrequentItemsInfo, windowSize);
-        updateFrequentItem(root, item);
+//        headerTable = removeInfrequentData(root, headerTable, inFrequentItemsInfo, windowSize);
+//        updateFrequentItem(root, item);
         List<HTableItemInfo> headerItemInfo = headerTable.getHeaderItemInfo();
         for (int i = headerItemInfo.size() - 1; i > 0; i--) {
             item = new FrequentItem(item);

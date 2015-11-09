@@ -1,16 +1,19 @@
 package com.mbzshajib.mining.processor.uncertain.mining;
 
+import com.mbzshajib.mining.collection.PowerSetGenerator;
 import com.mbzshajib.mining.exception.DataNotValidException;
 import com.mbzshajib.mining.processor.uncertain.model.*;
 import com.mbzshajib.mining.util.Constant;
 import com.mbzshajib.mining.util.Utils;
+import com.mbzshajib.utility.file.FileUtility;
 import com.mbzshajib.utility.model.ProcessingError;
 import com.mbzshajib.utility.model.Processor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * *****************************************************************
@@ -27,15 +30,30 @@ import java.util.List;
 public class UncertainStreamMiner implements Processor<UncertainStreamMineInput, UncertainStreamMineOutput> {
     public static final String TAG = UncertainStreamMiner.class.getCanonicalName();
     private List<FrequentItem> frequentItemList;
+    private Map<String, WindowItem> windowItemMap;
 
     @Override
-    public UncertainStreamMineOutput process(UncertainStreamMineInput uncertainStreamMineInput) throws ProcessingError {
+    public UncertainStreamMineOutput process(UncertainStreamMineInput uncertainStreamMineInput) throws ProcessingError, IOException {
+        windowItemMap = new HashMap<>();
         frequentItemList = new ArrayList<FrequentItem>();
         WeightedTree weightedTree = uncertainStreamMineInput.getWeightedTree();
-        System.out.println(weightedTree.getTraversedString());
+//        System.out.println(weightedTree.getTraversedString());
 
         InfrequentWeightedItemSetMining itemSetMining = new InfrequentWeightedItemSetMining();
         ItemSet itemSet = itemSetMining.mineWeightedTree(weightedTree);
+//        System.out.println(itemSet.traverse());
+        List<List<WInputData>> windowTransactionList = uncertainStreamMineInput.getWindowTransactionList();
+        int windowTotalWeight = getWindowTotalWeight(windowTransactionList);
+        generateWindowPatternList(windowTransactionList, windowTotalWeight);
+        Map<String, WindowItem> copyWindowMap = new HashMap<>(windowItemMap);
+//        generateSft(windowTotalWeight);
+
+        double support = (double) uncertainStreamMineInput.getMaxSupport() / 100;
+
+        Map<String, WindowItem> result = getResult(itemSet, support);
+
+        printOutput(weightedTree, itemSet, support, windowTotalWeight, copyWindowMap, result, uncertainStreamMineInput.getOutputFilePath());
+
 
         UncertainStreamMineOutput uncertainStreamMineOutput = new UncertainStreamMineOutput();
         uncertainStreamMineOutput.setItemSet(itemSet);
@@ -55,20 +73,147 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 //        sortByPrefix(HTableItemInfoList);
     }
 
-    private void printOutput() {
-        StringBuilder builder = new StringBuilder();
-        int count = 1;
-        builder.append("Total Frequent Items ")
+    private void printOutput(WeightedTree weightedTree, ItemSet itemSet, double support, int windowTotalWeight, Map<String,
+            WindowItem> copyWindowMap, Map<String, WindowItem> result, String outputLocation) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("########## WINDOW START ###########\n\n");
+        stringBuilder.append(weightedTree.getTraversedString());
+        stringBuilder.append("Total Items found in tree ")
                 .append(Constant.TABBED_HASH)
-                .append(frequentItemList.size())
+                .append(itemSet.traverse())
+                .append(Constant.NEW_LINE)
+                .append(Constant.NEW_LINE)
+                .append("Window total weight ")
+                .append(Constant.TABBED_HASH)
+                .append(windowTotalWeight)
+                .append(Constant.NEW_LINE)
+                .append(Constant.NEW_LINE)
+                .append("Window Items ")
+                .append(Constant.TABBED_HASH)
                 .append(Constant.NEW_LINE);
-        for (FrequentItem item : frequentItemList) {
-            builder.append(count)
-                    .append(item.traverse())
-                    .append(Constant.NEW_LINE);
+        Iterator it = copyWindowMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            WindowItem windowItem = (WindowItem) pair.getValue();
+
+            stringBuilder.append(windowItem.toString())
+            .append(Constant.NEW_LINE) ;
+            it.remove();
         }
-        System.out.println(builder.toString());
+        stringBuilder.append(Constant.NEW_LINE)
+                .append("Support ")
+                .append(Constant.TABBED_HASH)
+                .append(support)
+                .append(Constant.NEW_LINE)
+                .append(Constant.NEW_LINE)
+                .append("Infrequent Items ")
+                .append(Constant.TABBED_HASH)
+                .append(Constant.NEW_LINE);
+
+        Iterator it1 = result.entrySet().iterator();
+        while (it1.hasNext()) {
+            Map.Entry pair = (Map.Entry) it1.next();
+            WindowItem windowItem = (WindowItem) pair.getValue();
+
+            stringBuilder.append(windowItem.toString())
+                    .append(Constant.NEW_LINE) ;
+            it1.remove();
+        }
+        stringBuilder.append("\n\n########## WINDOW END ###########\n");
+        System.out.println(stringBuilder.toString());
+
+        File file = new File("output");
+        FileUtility.writeFile(file, "data", stringBuilder.toString());
+
+
+
     }
+
+    private Map<String, WindowItem> getResult(ItemSet itemSet, double support) {
+        Map<String, WindowItem> windowItemMapOutput = new HashMap<>();
+        Iterator it = windowItemMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+//            System.out.println(pair.getKey() + " = " + pair.getValue());
+            WindowItem windowItem = (WindowItem) pair.getValue();
+
+            if (windowItem.getSft() < support && itemSet.getItemSet().contains(windowItem.getPattern())) {
+
+                windowItemMapOutput.put(windowItem.getPattern(), windowItem);
+            }
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+
+//        System.out.println("### RESULT ###");
+//        Iterator it1 = windowItemMapOutput.entrySet().iterator();
+//        while (it1.hasNext()) {
+//            Map.Entry pair = (Map.Entry) it1.next();
+//            System.out.println(pair.getKey() + " = " + pair.getValue());
+//            it1.remove(); // avoids a ConcurrentModificationException
+//        }
+//        System.out.println("### RESULT ###");
+        return windowItemMapOutput;
+
+    }
+
+    private int getWindowTotalWeight(List<List<WInputData>> windowTransactionList) {
+        int weight = 0;
+        for (List<WInputData> wInputDatas : windowTransactionList) {
+            for (WInputData wInputData : wInputDatas) {
+                weight += wInputData.getItemWeight();
+            }
+
+        }
+        return weight;
+
+    }
+
+    private void generateWindowPatternList(List<List<WInputData>> windowTransactionList, int windowTotalWeight) {
+        PowerSetGenerator powerSetGenerator = new PowerSetGenerator();
+        for (List<WInputData> wInputDatas : windowTransactionList) {
+            List<ArrayList<WInputData>> list = powerSetGenerator.generatePowerSet(wInputDatas);
+            for (List<WInputData> arrayList : list) {
+                if (arrayList.size() > 0) {
+                    WindowItem windowItem = new WindowItem();
+                    windowItem.setWindowTotalWeight(windowTotalWeight);
+                    for (WInputData wInputData : arrayList) {
+                        windowItem.setPattern(windowItem.getPattern() + wInputData.getId());
+                        windowItem.setLmv(windowItem.getLmv() + wInputData.getItemWeight());
+                    }
+                    addToWindowItemList(windowItem);
+                }
+            }
+        }
+    }
+
+    private void addToWindowItemList(WindowItem windowItem) {
+//        System.out.println(windowItem.getPattern());
+        WindowItem item = windowItemMap.get(windowItem.getPattern());
+        if (item == null) {
+            windowItemMap.put(windowItem.getPattern(), windowItem);
+        } else {
+            windowItemMap.remove(item);
+            item.addWeight(windowItem.getLmv());
+            windowItemMap.put(item.getPattern(), item);
+        }
+
+        //To change body of created methods use File | Settings | File Templates.
+    }
+
+//    private void printOutput() {
+//        StringBuilder builder = new StringBuilder();
+//        int count = 1;
+//        builder.append("Total Frequent Items ")
+//                .append(Constant.TABBED_HASH)
+//                .append(frequentItemList.size())
+//                .append(Constant.NEW_LINE);
+//        for (FrequentItem item : frequentItemList) {
+//            builder.append(count)
+//                    .append(item.traverse())
+//                    .append(Constant.NEW_LINE);
+//        }
+//        System.out.println(builder.toString());
+//    }
 
     private void startMining(WeightedTree weightedTree, int minSupport) throws DataNotValidException {
         WeightedNode rootNode = weightedTree.getRootNode();

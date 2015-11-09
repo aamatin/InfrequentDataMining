@@ -34,16 +34,16 @@ public class WeightedTree {
     public String getTraversedString() {
         StringBuilder builder = new StringBuilder();
         builder.append("UNCERTAIN TREE")
-                .append(Constant.NEW_LINE)
                 .append(Constant.NEW_LINE);
         builder.append(rootNode.traverse());
         builder.append(Constant.NEW_LINE);
-
-        builder.append("HEADER TABLE")
-                .append(Constant.NEW_LINE)
-                .append(Constant.NEW_LINE);
-        builder.append(headerTable.traverse());
         builder.append(Constant.NEW_LINE);
+
+//        builder.append("HEADER TABLE")
+//                .append(Constant.NEW_LINE)
+//                .append(Constant.NEW_LINE);
+//        builder.append(headerTable.traverse());
+//        builder.append(Constant.NEW_LINE);
         return builder.toString();
     }
 

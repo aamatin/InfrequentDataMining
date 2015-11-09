@@ -78,7 +78,7 @@ public class InfrequentWeightedItemSetMining {
             }
             it.remove(); // avoids a ConcurrentModificationException
         }
-        System.out.println(itemSet.traverse());
+
 
 
         return itemSet;

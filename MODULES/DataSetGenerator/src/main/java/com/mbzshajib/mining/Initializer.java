@@ -1,6 +1,7 @@
 package com.mbzshajib.mining;
 
 import com.mbzshajib.mining.util.Configurations;
+import com.mbzshajib.utility.file.FileUtility;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class Initializer {
 
     public static void initialize() throws IOException {
 //        loadProperties();
+        FileUtility.createPath("output");
     }
 
     private static void loadProperties() throws IOException {

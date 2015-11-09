@@ -68,6 +68,6 @@ public class ConfigurationLoader<E extends ConfigModel> {
     public void generateJsonConfigFile(String path, String fileName, E e) throws IOException {
         Gson gson = new Gson();
         String jsonString = gson.toJson(e);
-        FileUtility.writeFile(path, fileName + Constants.FILE_EXT_JSON, jsonString);
+//        FileUtility.writeFile(path, fileName + Constants.FILE_EXT_JSON, jsonString);
     }
 }

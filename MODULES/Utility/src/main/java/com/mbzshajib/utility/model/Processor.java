@@ -1,5 +1,7 @@
 package com.mbzshajib.utility.model;
 
+import java.io.IOException;
+
 /**
  * *****************************************************************
  * Copyright  2015.
@@ -13,5 +15,5 @@ package com.mbzshajib.utility.model;
 
 
 public interface Processor<I extends Input, O extends Output> {
-    O process(I i) throws ProcessingError;
+    O process(I i) throws ProcessingError, IOException;
 }

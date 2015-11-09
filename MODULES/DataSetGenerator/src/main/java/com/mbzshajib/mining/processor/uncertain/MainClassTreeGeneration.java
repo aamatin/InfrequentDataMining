@@ -29,7 +29,7 @@ import java.io.IOException;
 public class MainClassTreeGeneration {
     public static final String TAG = MainClassTreeGeneration.class.getCanonicalName();
 
-    private static final int MIN_SUP = 150;
+    private static final int MIN_SUP = 20;
     private static int windowNumber = 1;
 
     public static void main(String[] args) throws ProcessingError, IOException, DataNotValidException {
@@ -46,6 +46,9 @@ public class MainClassTreeGeneration {
         UncertainStreamMineInput result = new UncertainStreamMineInput();
         result.setMaxSupport(MIN_SUP);
         result.setWeightedTree(treeConstructionOutput.getWeightedTree());
+        result.setWindowTransactionList( treeConstructionOutput.getWindowTransactionList());
+        result.setOutputFilePath("OUTPUT/cpu_data.txt");
+
         return result;
     }
 
@@ -56,7 +59,7 @@ public class MainClassTreeGeneration {
         treeConstructionInput.setWindowSize(3);
         treeConstructionInput.setWindowCompletionCallback(new WindowCompletionCallback() {
             @Override
-            public UncertainStreamMineOutput sendUpdate(TreeConstructionOutput treeConstructionOutput) throws ProcessingError {
+            public UncertainStreamMineOutput sendUpdate(TreeConstructionOutput treeConstructionOutput) throws ProcessingError, IOException {
                 windowNumber++;
                 UncertainStreamMineInput uncertainStreamMineInput = getMiningInput(treeConstructionOutput);
                 UncertainStreamMiner uncertainStreamMiner = new UncertainStreamMiner();

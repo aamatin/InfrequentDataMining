@@ -70,10 +70,10 @@ public class FileUtility {
 
     }
 
-    public static void writeFile(String path, String fileName, String data) throws IOException {
-        createPath(path);
-        String fullPath = path + fileName;
-        File file = new File(fullPath);
+    public static void writeFile(File dir, String fileName, String data) throws IOException {
+
+        String fullPath = fileName + "_" + System.currentTimeMillis()+".txt";
+        File file = new File(dir, fullPath);
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -82,10 +82,16 @@ public class FileUtility {
         bufferedWriter.close();
     }
 
-    private static void createPath(String path) {
+    public static File createPath(String path) {
         File dir = new File(path);
         if (!(dir.exists())) {
             dir.mkdir();
+        } else{
+            for (File file : dir.listFiles()) {
+                file.delete();
+            }
+
         }
+        return dir;
     }
 }

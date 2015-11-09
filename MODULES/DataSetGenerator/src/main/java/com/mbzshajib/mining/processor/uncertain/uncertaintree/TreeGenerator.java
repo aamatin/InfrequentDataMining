@@ -31,6 +31,12 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     private long endTime;
     private long globalStartTime;
     private long startTime;
+    private List<List<WInputData>> windowTransactionList;
+
+
+    public TreeGenerator() {
+        windowTransactionList = new ArrayList<>();
+    }
 
     @Override
     public TreeConstructionOutput process(TreeConstructionInput treeConstructionInput) throws ProcessingError {
@@ -46,14 +52,14 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             for (int frameNo = 0; frameNo < treeConstructionInput.getWindowSize(); frameNo++) {
                 for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                     List<WInputData> nodes = getTransaction();
+                    windowTransactionList.add(nodes);
                     weightedTree.addTransactionToTree(nodes, frameNo);
                 }
             }
             UncertainStreamMineOutput uncertainStreamMineOutput = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
-
-
-            getWindowPatterns( windowStartTransaction, windowEndTransaction, treeConstructionInput.getInputFilePath());
-
+            for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
+                windowTransactionList.remove(0);
+            }
 
             weightedTree.slideWindowAndUpdateTree();
             List<WInputData> nodes = null;
@@ -62,8 +68,12 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
                 if (!(frameCounter < treeConstructionInput.getFrameSize())) {
                     frameCounter = 0;
                     treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+                    for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
+                        windowTransactionList.remove(0);
+                    }
                     weightedTree.slideWindowAndUpdateTree();
-                 }
+                }
+                windowTransactionList.add(nodes);
                 weightedTree.addTransactionToTree(nodes, treeConstructionInput.getWindowSize() - 1);
                 frameCounter++;
 
@@ -80,12 +90,6 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
         return createUpdate(weightedTree);
     }
 
-    private void getWindowPatterns(int windowStartTransaction, int windowEndTransaction, String inputFilePath) throws IOException {
-       BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(treeConstructionInput.getInputFilePath())));
-        for(int i = 1;i<windowStartTransaction;i++){
-            bufferedReader.readLine();
-        }
-    }
 
     private TreeConstructionOutput createUpdate(WeightedTree weightedTree) {
         TreeConstructionOutput treeConstructionOutput = new TreeConstructionOutput();
@@ -97,6 +101,7 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
         } catch (DataNotValidException e) {
             e.printStackTrace();
         }
+        treeConstructionOutput.setWindowTransactionList(windowTransactionList);
         return treeConstructionOutput;
     }
 

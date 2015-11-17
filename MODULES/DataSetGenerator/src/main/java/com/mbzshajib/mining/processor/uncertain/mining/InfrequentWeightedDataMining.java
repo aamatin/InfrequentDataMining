@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * Created by CSEDU on 11/7/2015.
  */
-public class InfrequentWeightedItemSetMining {
+public class InfrequentWeightedDataMining {
     public ItemSet mineWeightedTree(WeightedTree weightedTree) {
         PowerSetManipulator powerSetManipulator = new PowerSetManipulator();
         WeightedNode rootNode = weightedTree.getRootNode();

@@ -29,6 +29,7 @@ import java.io.IOException;
 public class MainClassTreeGeneration {
     public static final String TAG = MainClassTreeGeneration.class.getCanonicalName();
 
+    // TODO : Put Maximum support
     private static final int MIN_SUP = 20;
     private static int windowNumber = 1;
 
@@ -55,7 +56,9 @@ public class MainClassTreeGeneration {
     private static TreeConstructionInput getTreeInput() {
         final TreeConstructionInput treeConstructionInput = new TreeConstructionInput();
         treeConstructionInput.setInputFilePath("INPUT/cpu_data.dat");
+        // TODO : Put batch size
         treeConstructionInput.setFrameSize(2);
+        // TODO : Put window size
         treeConstructionInput.setWindowSize(3);
         treeConstructionInput.setWindowCompletionCallback(new WindowCompletionCallback() {
             @Override

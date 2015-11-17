@@ -2,8 +2,10 @@ package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
 import com.mbzshajib.mining.exception.DataNotValidException;
 import com.mbzshajib.mining.processor.uncertain.mining.UncertainStreamMineOutput;
+import com.mbzshajib.mining.processor.uncertain.model.TimeModel;
 import com.mbzshajib.mining.processor.uncertain.model.WInputData;
 import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
+import com.mbzshajib.utility.file.FileUtility;
 import com.mbzshajib.utility.model.ProcessingError;
 import com.mbzshajib.utility.model.Processor;
 
@@ -32,14 +34,18 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     private long globalStartTime;
     private long startTime;
     private List<List<WInputData>> windowTransactionList;
+    private List<TimeModel> treeConstructionTimeAllWindow;
+    private List<TimeModel> miningTimeAllWindow;
 
 
     public TreeGenerator() {
         windowTransactionList = new ArrayList<>();
+        treeConstructionTimeAllWindow = new ArrayList<>();
+        miningTimeAllWindow = new ArrayList<>();
     }
 
     @Override
-    public TreeConstructionOutput process(TreeConstructionInput treeConstructionInput) throws ProcessingError {
+    public TreeConstructionOutput process(TreeConstructionInput treeConstructionInput) throws ProcessingError, IOException {
         int windowSize = treeConstructionInput.getWindowSize() * treeConstructionInput.getFrameSize();
         this.treeConstructionInput = treeConstructionInput;
         WeightedTree weightedTree = null;
@@ -49,6 +55,7 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             initialize();
             weightedTree = new WeightedTree(treeConstructionInput.getFrameSize(), treeConstructionInput.getWindowSize());
             windowEndTransaction = windowSize;
+            this.startTime = System.currentTimeMillis();
             for (int frameNo = 0; frameNo < treeConstructionInput.getWindowSize(); frameNo++) {
                 for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                     List<WInputData> nodes = getTransaction();
@@ -57,6 +64,7 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
                 }
             }
             UncertainStreamMineOutput uncertainStreamMineOutput = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+            miningTimeAllWindow.add(uncertainStreamMineOutput.getMiningTime());
             for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                 windowTransactionList.remove(0);
             }
@@ -67,7 +75,8 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             while (!(nodes = getTransaction()).isEmpty()) {
                 if (!(frameCounter < treeConstructionInput.getFrameSize())) {
                     frameCounter = 0;
-                    treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+                    UncertainStreamMineOutput uncertainStreamMineOutput1 = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+                    miningTimeAllWindow.add(uncertainStreamMineOutput1.getMiningTime());
                     for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                         windowTransactionList.remove(0);
                     }
@@ -86,16 +95,44 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
         } catch (IOException e) {
             e.printStackTrace();
         }
+        evaluate();
 
         return createUpdate(weightedTree);
+    }
+
+    private void evaluate() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("####### Tree Construction time for each window ######\n\n");
+        int i = 1;
+        int sum = 0;
+        for (TimeModel timeModel : treeConstructionTimeAllWindow) {
+            stringBuilder.append("Window : " + i++ + "----> " + timeModel.getTimeNeeded() + " milliseconds\n");
+            sum += timeModel.getTimeNeeded();
+        }
+        stringBuilder.append("\nAverage time for tree construction : " + sum / treeConstructionTimeAllWindow.size() + " milliseconds\n");
+
+        stringBuilder.append("\n\n####### Mining time for each window ######\n\n");
+        i = 1;
+        sum = 0;
+        for (TimeModel timeModel : miningTimeAllWindow) {
+            stringBuilder.append("Window : " + i++ + "----> " + timeModel.getTimeNeeded() + " milliseconds\n");
+            sum += timeModel.getTimeNeeded();
+        }
+        stringBuilder.append("\nAverage time for mining : " + sum / miningTimeAllWindow.size() + " milliseconds\n");
+
+
+        File file = new File("output");
+        FileUtility.writeFile(file, "evaluation", stringBuilder.toString());
+
     }
 
 
     private TreeConstructionOutput createUpdate(WeightedTree weightedTree) {
         TreeConstructionOutput treeConstructionOutput = new TreeConstructionOutput();
-        treeConstructionOutput.setStartTime(startTime);
-        startTime = System.currentTimeMillis();
-        treeConstructionOutput.setEndTime(System.currentTimeMillis());
+        TimeModel timeModel = new TimeModel(startTime, System.currentTimeMillis());
+        treeConstructionOutput.setTimeModel(timeModel);
+        treeConstructionTimeAllWindow.add(timeModel);
+        this.startTime = System.currentTimeMillis();
         try {
             treeConstructionOutput.setWeightedTree(weightedTree.copy());
         } catch (DataNotValidException e) {

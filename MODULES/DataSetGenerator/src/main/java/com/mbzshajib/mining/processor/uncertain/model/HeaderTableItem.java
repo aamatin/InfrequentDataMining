@@ -110,7 +110,7 @@ class HeaderTableItem {
     }
 
     void addNodeItem(WeightedNode node, int index) {
-        //TODO: Later UPdate this in the table.
+        //Later UPdate this in the table.
 //        if (nodeList.size() <= index) {
 //            for (int i = nodeList.size() - 1; i < index; i++) {
 //                nodeList.add(null);

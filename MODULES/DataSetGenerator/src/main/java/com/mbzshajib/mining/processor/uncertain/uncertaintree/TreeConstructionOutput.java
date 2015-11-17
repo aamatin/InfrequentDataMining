@@ -1,5 +1,6 @@
 package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
+import com.mbzshajib.mining.processor.uncertain.model.TimeModel;
 import com.mbzshajib.mining.processor.uncertain.model.WInputData;
 import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
 import com.mbzshajib.utility.model.Output;
@@ -20,8 +21,7 @@ import java.util.List;
 
 public class TreeConstructionOutput implements Output {
     private WeightedTree weightedTree;
-    private long endTime;
-    private long startTime;
+    private TimeModel timeModel;
     private List<List<WInputData>> windowTransactionList;
 
     public WeightedTree getWeightedTree() {
@@ -32,20 +32,12 @@ public class TreeConstructionOutput implements Output {
         this.weightedTree = weightedTree;
     }
 
-    public long getEndTime() {
-        return endTime;
+    public TimeModel getTimeModel() {
+        return timeModel;
     }
 
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
-
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
+    public void setTimeModel(TimeModel timeModel) {
+        this.timeModel = timeModel;
     }
 
     public List<List<WInputData>> getWindowTransactionList() {

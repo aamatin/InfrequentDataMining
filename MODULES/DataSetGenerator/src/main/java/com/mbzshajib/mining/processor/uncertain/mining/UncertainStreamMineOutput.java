@@ -2,6 +2,7 @@ package com.mbzshajib.mining.processor.uncertain.mining;
 
 import com.mbzshajib.mining.processor.uncertain.model.FrequentItem;
 import com.mbzshajib.mining.processor.uncertain.model.ItemSet;
+import com.mbzshajib.mining.processor.uncertain.model.TimeModel;
 import com.mbzshajib.utility.model.Output;
 
 /**
@@ -19,6 +20,7 @@ import com.mbzshajib.utility.model.Output;
 public class UncertainStreamMineOutput implements Output {
     ItemSet itemSet;
     int maxSupport;
+    TimeModel miningTime;
 
     public ItemSet getItemSet() {
         return itemSet;
@@ -34,5 +36,13 @@ public class UncertainStreamMineOutput implements Output {
 
     public void setMaxSupport(int maxSupport) {
         this.maxSupport = maxSupport;
+    }
+
+    public TimeModel getMiningTime() {
+        return miningTime;
+    }
+
+    public void setMiningTime(TimeModel miningTime) {
+        this.miningTime = miningTime;
     }
 }

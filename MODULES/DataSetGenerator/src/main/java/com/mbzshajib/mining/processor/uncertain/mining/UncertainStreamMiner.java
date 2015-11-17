@@ -34,12 +34,13 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 
     @Override
     public UncertainStreamMineOutput process(UncertainStreamMineInput uncertainStreamMineInput) throws ProcessingError, IOException {
+        long miningStartTime = System.currentTimeMillis();
         windowItemMap = new HashMap<>();
         frequentItemList = new ArrayList<FrequentItem>();
         WeightedTree weightedTree = uncertainStreamMineInput.getWeightedTree();
 //        System.out.println(weightedTree.getTraversedString());
 
-        InfrequentWeightedItemSetMining itemSetMining = new InfrequentWeightedItemSetMining();
+        InfrequentWeightedDataMining itemSetMining = new InfrequentWeightedDataMining();
         ItemSet itemSet = itemSetMining.mineWeightedTree(weightedTree);
 //        System.out.println(itemSet.traverse());
         List<List<WInputData>> windowTransactionList = uncertainStreamMineInput.getWindowTransactionList();
@@ -64,6 +65,8 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 //            throw new ProcessingError(e);
 //        }
 //        printOutput();
+        TimeModel timeModel = new TimeModel(miningStartTime, System.currentTimeMillis());
+        uncertainStreamMineOutput.setMiningTime(timeModel);
         return uncertainStreamMineOutput;
 //        printBeforeMining(weightedTree);
 //        WeightedNode rootNode = weightedTree.getRootNode();
@@ -97,7 +100,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
             WindowItem windowItem = (WindowItem) pair.getValue();
 
             stringBuilder.append(windowItem.toString())
-            .append(Constant.NEW_LINE) ;
+                    .append(Constant.NEW_LINE);
             it.remove();
         }
         stringBuilder.append(Constant.NEW_LINE)
@@ -116,7 +119,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
             WindowItem windowItem = (WindowItem) pair.getValue();
 
             stringBuilder.append(windowItem.toString())
-                    .append(Constant.NEW_LINE) ;
+                    .append(Constant.NEW_LINE);
             it1.remove();
         }
         stringBuilder.append("\n\n########## WINDOW END ###########\n");
@@ -124,7 +127,6 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 
         File file = new File("output");
         FileUtility.writeFile(file, "data", stringBuilder.toString());
-
 
 
     }
@@ -238,7 +240,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 //            }
             mine(rootNode, frequentItem, weightedTree.getWindowSize(), node.getId(), minSupport, false);
         }
-        //TODO: generate
+        //TODOTODO: generate
 
 
 //        HeaderTable headerTable = generateHeaderTableForCondTree(rootNode, weightedTree.getWindowSize());
@@ -256,11 +258,11 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 //        HeaderTable headerTable = weightedTree.getHeaderTable();
 //        int windowSize = headerTable.getWindowSize();
 //        List<HTableItemInfo> inFrequentItemsInfo = getInfrequentItemInfoFromHeader(headerTable, minSupport);
-//        //TODO:Remove data below support(Probability & Prefix Value).
+//        //TODOTODO:Remove data below support(Probability & Prefix Value).
 //        removeInfrequentData(rootNode, headerTable, inFrequentItemsInfo, windowSize);
 //        List<HTableItemInfo> listToBeMined = headerTable.getFrequentItemInfoByPrefix(minSupport);
 ////        sortByPrefix(listToBeMined);
-//        //TODO:LOOP
+//        //TODOTODO:LOOP
 //        for (int loopCounter = listToBeMined.size() - 1; loopCounter >= 0; loopCounter--) {
 //            WeightedNode tmpNode = rootNode.copy();
 //            FrequentItem frequentItem = new FrequentItem();

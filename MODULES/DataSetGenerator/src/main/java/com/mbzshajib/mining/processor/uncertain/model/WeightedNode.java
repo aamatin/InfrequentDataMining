@@ -26,7 +26,7 @@ public class WeightedNode {
     private List<WeightedNode> childNodeList;
     private List<WData> uncertainDataList;
     private int nodeWeight;
-    // TODO - no need
+    // TODOTODO - no need
     private int miningProbability;
 
     private WeightedNode() {

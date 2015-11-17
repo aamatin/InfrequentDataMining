@@ -32,7 +32,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
     public UncertainStreamMineOutput process(UncertainStreamMineInput uncertainStreamMineInput) throws ProcessingError {
         frequentItemList = new ArrayList<FrequentItem>();
         WeightedTree weightedTree = uncertainStreamMineInput.getWeightedTree();
-        System.out.println(weightedTree.getTraversedString());
+//        System.out.println(weightedTree.getTraversedString());
 
         InfrequentWeightedItemSetMining itemSetMining = new InfrequentWeightedItemSetMining();
         ItemSet itemSet = itemSetMining.mineWeightedTree(weightedTree);

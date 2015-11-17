@@ -1,7 +1,7 @@
 package com.mbzshajib.utility.configloader;
 
 import com.google.gson.Gson;
-import com.mbzshajib.utility.common.Constants;
+import com.mbzshajib.utility.dataset.Constants;
 import com.mbzshajib.utility.exception.DataNotFoundException;
 import com.mbzshajib.utility.file.FileUtility;
 

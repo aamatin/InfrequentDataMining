@@ -16,8 +16,6 @@ import java.util.Random;
 
 
 public final class RandomUtility {
-    private static final double MEAN = .5;
-    private static final double VARIANCE = MEAN / Math.PI;
     public static final double getRandom(double minValue, double maxValue, int precision) {
         if (minValue >= maxValue) {
             throw new IllegalArgumentException("maxValue must be greater than minValue. maxValue is : " + maxValue + " minValue is : " + minValue);

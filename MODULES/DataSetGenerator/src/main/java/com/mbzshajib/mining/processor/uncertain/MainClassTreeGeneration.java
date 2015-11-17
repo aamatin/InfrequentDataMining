@@ -29,7 +29,7 @@ import java.io.IOException;
 public class MainClassTreeGeneration {
     public static final String TAG = MainClassTreeGeneration.class.getCanonicalName();
 
-    private static final int MIN_SUP = 150;
+    private static final int MIN_SUP = -500;
     private static int windowNumber = 1;
 
     public static void main(String[] args) throws ProcessingError, IOException, DataNotValidException {
@@ -51,9 +51,9 @@ public class MainClassTreeGeneration {
 
     private static TreeConstructionInput getTreeInput() {
         final TreeConstructionInput treeConstructionInput = new TreeConstructionInput();
-        treeConstructionInput.setInputFilePath("INPUT/cpu_data.dat");
-        treeConstructionInput.setFrameSize(2);
-        treeConstructionInput.setWindowSize(3);
+        treeConstructionInput.setInputFilePath("INPUT/resultdata.dat");
+        treeConstructionInput.setFrameSize(300);
+        treeConstructionInput.setWindowSize(2);
         treeConstructionInput.setWindowCompletionCallback(new WindowCompletionCallback() {
             @Override
             public UncertainStreamMineOutput sendUpdate(TreeConstructionOutput treeConstructionOutput) throws ProcessingError {

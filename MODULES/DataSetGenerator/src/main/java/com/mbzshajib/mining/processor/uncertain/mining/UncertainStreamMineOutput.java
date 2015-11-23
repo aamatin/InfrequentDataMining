@@ -19,7 +19,7 @@ import com.mbzshajib.utility.model.Output;
 
 public class UncertainStreamMineOutput implements Output {
     ItemSet itemSet;
-    int maxSupport;
+    double maxSupport;
     TimeModel miningTime;
 
     public ItemSet getItemSet() {
@@ -30,11 +30,11 @@ public class UncertainStreamMineOutput implements Output {
         this.itemSet = itemSet;
     }
 
-    public int getMaxSupport() {
+    public double getMaxSupport() {
         return maxSupport;
     }
 
-    public void setMaxSupport(int maxSupport) {
+    public void setMaxSupport(double maxSupport) {
         this.maxSupport = maxSupport;
     }
 

@@ -2,6 +2,7 @@ package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
 import com.mbzshajib.mining.exception.DataNotValidException;
 import com.mbzshajib.mining.processor.uncertain.mining.UncertainStreamMineOutput;
+import com.mbzshajib.mining.processor.uncertain.model.ItemSet;
 import com.mbzshajib.mining.processor.uncertain.model.TimeModel;
 import com.mbzshajib.mining.processor.uncertain.model.WInputData;
 import com.mbzshajib.mining.processor.uncertain.model.WeightedTree;
@@ -36,12 +37,14 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     private List<List<WInputData>> windowTransactionList;
     private List<TimeModel> treeConstructionTimeAllWindow;
     private List<TimeModel> miningTimeAllWindow;
+    private List<ItemSet> allWindowItemSet;
 
 
     public TreeGenerator() {
         windowTransactionList = new ArrayList<>();
         treeConstructionTimeAllWindow = new ArrayList<>();
         miningTimeAllWindow = new ArrayList<>();
+        allWindowItemSet = new ArrayList<>() ;
     }
 
     @Override
@@ -65,6 +68,11 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             }
             UncertainStreamMineOutput uncertainStreamMineOutput = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
             miningTimeAllWindow.add(uncertainStreamMineOutput.getMiningTime());
+            ItemSet itemSet = uncertainStreamMineOutput.getItemSet();
+            for (String s : itemSet.getItemSet()) {
+                System.out.println("Item : "+ s);
+            }
+            allWindowItemSet.add(itemSet);
             for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                 windowTransactionList.remove(0);
             }
@@ -77,6 +85,11 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
                     frameCounter = 0;
                     UncertainStreamMineOutput uncertainStreamMineOutput1 = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
                     miningTimeAllWindow.add(uncertainStreamMineOutput1.getMiningTime());
+                    itemSet = uncertainStreamMineOutput1.getItemSet();
+                    for (String s : itemSet.getItemSet()) {
+                        System.out.println("Item : "+ s);
+                    }
+                    allWindowItemSet.add(itemSet);
                     for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                         windowTransactionList.remove(0);
                     }
@@ -120,6 +133,14 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
         }
         stringBuilder.append("\nAverage time for mining : " + sum / miningTimeAllWindow.size() + " milliseconds\n");
 
+        stringBuilder.append("\n\n####### Itemset for each window ######\n\n");
+        i = 1;
+        sum = 0;
+        for (ItemSet itemSet : allWindowItemSet) {
+            stringBuilder.append("Window : " + i++ + "----> \n");
+            stringBuilder.append(itemSet.traverse());
+            stringBuilder.append("\n\n");
+        }
 
         File file = new File("output");
         FileUtility.writeFile(file, "evaluation", stringBuilder.toString());

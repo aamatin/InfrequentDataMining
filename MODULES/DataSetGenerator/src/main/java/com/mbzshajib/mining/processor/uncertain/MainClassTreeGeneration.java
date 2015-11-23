@@ -30,7 +30,7 @@ public class MainClassTreeGeneration {
     public static final String TAG = MainClassTreeGeneration.class.getCanonicalName();
 
     // TODO : Put Maximum support
-    private static final int MIN_SUP = 20;
+    private static final double MIN_SUP = .2;
     private static int windowNumber = 1;
 
     public static void main(String[] args) throws ProcessingError, IOException, DataNotValidException {
@@ -57,9 +57,9 @@ public class MainClassTreeGeneration {
         final TreeConstructionInput treeConstructionInput = new TreeConstructionInput();
         treeConstructionInput.setInputFilePath("INPUT/cpu_data.dat");
         // TODO : Put batch size
-        treeConstructionInput.setFrameSize(2);
+        treeConstructionInput.setFrameSize(400);
         // TODO : Put window size
-        treeConstructionInput.setWindowSize(3);
+        treeConstructionInput.setWindowSize(5);
         treeConstructionInput.setWindowCompletionCallback(new WindowCompletionCallback() {
             @Override
             public UncertainStreamMineOutput sendUpdate(TreeConstructionOutput treeConstructionOutput) throws ProcessingError, IOException {
@@ -68,6 +68,7 @@ public class MainClassTreeGeneration {
                 UncertainStreamMiner uncertainStreamMiner = new UncertainStreamMiner();
                 UncertainStreamMineOutput mineOutput = uncertainStreamMiner.process(uncertainStreamMineInput);
                 mineOutput.setMaxSupport(uncertainStreamMineInput.getMaxSupport());
+
                 return mineOutput;
             }
         });

@@ -20,21 +20,21 @@ import java.util.List;
 
 public class UncertainStreamMineInput implements Input {
 
-    private int maxSupport;
+    private double maxSupport;
     private WeightedTree weightedTree;
     private List<List<WInputData>> windowTransactionList;
     private String outputFilePath;
 
 
-    public int getMaxSupport() {
+    public double getMaxSupport() {
         return maxSupport;
     }
 
-    public void setMaxSupport(int maSupport) {
+    public void setMaxSupport(double maSupport) {
         this.maxSupport = maSupport;
     }
 
-    public int getMinSupport() {
+    public double getMinSupport() {
         return maxSupport;
     }
 

@@ -10,12 +10,14 @@ import java.util.Map;
  */
 public class HeaderTableforIWM {
     List<String> items;
-    Map<String, List<WeightedNode>> map;
+    Map<String, HeadertableItemIWM> map;
+//    Map<String, int> map;
 
     public HeaderTableforIWM() {
         this.items = new ArrayList<>();
         this.map = new HashMap<>();
     }
+
 
     public List<String> getItems() {
         return items;
@@ -25,11 +27,11 @@ public class HeaderTableforIWM {
         this.items = items;
     }
 
-    public Map<String, List<WeightedNode>> getMap() {
+    public Map<String, HeadertableItemIWM> getMap() {
         return map;
     }
 
-    public void setMap(Map<String, List<WeightedNode>> map) {
+    public void setMap(Map<String, HeadertableItemIWM> map) {
         this.map = map;
     }
 
@@ -37,15 +39,24 @@ public class HeaderTableforIWM {
         String item = weightedNode.getId();
         if(!items.contains(item)){
             items.add(item);
-            List<WeightedNode> weightedNodes = new ArrayList<>();
-            weightedNodes.add(weightedNode);
+//            List<HeadertableItemIWM> weightedNodes = new ArrayList<>();
+            HeadertableItemIWM headertableItemIWM = new HeadertableItemIWM();
+            headertableItemIWM.setItem(item);
+            headertableItemIWM.setValue(weightedNode.getNodeWeight());
+            headertableItemIWM.addNodeToList(weightedNode);
+//            weightedNodes.add(headertableItemIWM);
 
-            map.put(item, weightedNodes);
+            map.put(item, headertableItemIWM);
 
         } else{
-            List<WeightedNode> weightedNodes = map.get(item);
-            weightedNodes.add(weightedNode);
-            map.put(item, weightedNodes);
+            HeadertableItemIWM headertableItemIWM = map.get(item);
+            headertableItemIWM.setValue(headertableItemIWM.getValue() +weightedNode.getNodeWeight());
+
+            headertableItemIWM.addNodeToList(weightedNode);
+//            weightedNodes.add(headertableItemIWM);
+
+            map.put(item, headertableItemIWM);
+
         }
     }
 }

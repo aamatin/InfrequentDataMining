@@ -40,20 +40,28 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         WeightedTree weightedTree = uncertainStreamMineInput.getWeightedTree();
 //        System.out.println(weightedTree.getTraversedString());
 
-        InfrequentWeightedDataMining itemSetMining = new InfrequentWeightedDataMining();
-        ItemSet itemSet = itemSetMining.mineWeightedTree(weightedTree);
-//        System.out.println(itemSet.traverse());
         List<List<WInputData>> windowTransactionList = uncertainStreamMineInput.getWindowTransactionList();
         int windowTotalWeight = getWindowTotalWeight(windowTransactionList);
-        generateWindowPatternList(windowTransactionList, windowTotalWeight);
-        Map<String, WindowItem> copyWindowMap = new HashMap<>(windowItemMap);
-//        generateSft(windowTotalWeight);
+        double threshold = windowTotalWeight *(2*uncertainStreamMineInput.getMaxSupport());
+        InfrequentWeightedDataMining itemSetMining = new InfrequentWeightedDataMining();
+        ItemSet itemSet = null;
+        try {
+            itemSet = itemSetMining.mineWeightedTree(weightedTree, threshold);
 
-        double support = (double) uncertainStreamMineInput.getMaxSupport() / 100;
 
-        Map<String, WindowItem> result = getResult(itemSet, support);
+        } catch (DataNotValidException e) {
+            e.printStackTrace();
+        }
+//        System.out.println(itemSet.traverse());
+//        generateWindowPatternList(windowTransactionList, windowTotalWeight);
+//        Map<String, WindowItem> copyWindowMap = new HashMap<>(windowItemMap);
+////        generateSft(windowTotalWeight);
+//
+//        double support = (double) uncertainStreamMineInput.getMaxSupport() / 100;
+//
+//        Map<String, WindowItem> result = getResult(itemSet, support);
 
-        printOutput(weightedTree, itemSet, support, windowTotalWeight, copyWindowMap, result, uncertainStreamMineInput.getOutputFilePath());
+//        printOutput(weightedTree, itemSet, support, windowTotalWeight, copyWindowMap, result, uncertainStreamMineInput.getOutputFilePath());
 
 
         UncertainStreamMineOutput uncertainStreamMineOutput = new UncertainStreamMineOutput();
@@ -67,6 +75,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
 //        printOutput();
         TimeModel timeModel = new TimeModel(miningStartTime, System.currentTimeMillis());
         uncertainStreamMineOutput.setMiningTime(timeModel);
+
         return uncertainStreamMineOutput;
 //        printBeforeMining(weightedTree);
 //        WeightedNode rootNode = weightedTree.getRootNode();

@@ -48,6 +48,10 @@ public class ItemSet {
         return itemSet;
     }
 
+    public void addItems(List<String> items){
+        itemSet.addAll(items);
+    }
+
     public String traverse() {
         StringBuilder builder = new StringBuilder();
         builder.append("Item: ");

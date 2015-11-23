@@ -1,7 +1,6 @@
 package com.mbzshajib.mining.processor.uncertain.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * *****************************************************************
@@ -16,24 +15,33 @@ import java.util.List;
  */
 
 public class FrequentItem {
-    private List<String> frequentSet;
-    private List<String> inFrequentSet;
+    private String[] frequentItemSet;
 
 
     public FrequentItem() {
-        frequentSet = new ArrayList<String>();
+        frequentItemSet = new String[]{};
+    }
+
+    public FrequentItem(String id) {
+        frequentItemSet = new String[]{id};
+
     }
 
     public FrequentItem(FrequentItem frequentItem) {
-        this.frequentSet = new ArrayList<String>();
-        for (String string : frequentItem.getFrequentSet()) {
-            this.frequentSet.add(new String(string));
+        this.frequentItemSet = new String[frequentItem.getFrequentItemSet().length];
+        for (int i = 0; i < frequentItem.getFrequentItemSet().length; i++) {
+            this.frequentItemSet[i] = new String(frequentItem.getFrequentItemSet()[i]);
+
         }
+    }
+
+    public FrequentItem(String[] item) {
+        this.frequentItemSet = item;
     }
 
     public void addFrequentItem(String itemId) {
         boolean found = false;
-        for (String id : frequentSet) {
+        for (String id : frequentItemSet) {
             if (id.equals(itemId)) {
                 found = true;
                 break;
@@ -42,37 +50,34 @@ public class FrequentItem {
 
         }
         if (!found) {
-            frequentSet.add(new String(itemId));
-        }
-    }
-
-    public void addInfrequent(String itemId) {
-        boolean found = false;
-        for (String id : inFrequentSet) {
-            if (id.equals(itemId)) {
-                found = true;
-                break;
+            String[] tmp = new String[this.frequentItemSet.length + 1];
+            for (int i = 0; i < frequentItemSet.length; i++) {
+                tmp[i] = frequentItemSet[i];
             }
-
-
-        }
-        if (!found) {
-            inFrequentSet.add(new String(itemId));
+            tmp[this.frequentItemSet.length] = new String(itemId);
+            frequentItemSet = tmp;
         }
     }
 
-    public List<String> getFrequentSet() {
-        return frequentSet;
+    public String[] getFrequentItemSet() {
+        return frequentItemSet;
     }
 
     public String traverse() {
         StringBuilder builder = new StringBuilder();
         builder.append("Item: ");
-        for (String string : frequentSet) {
+        for (String string : frequentItemSet) {
             builder.append("(")
                     .append(string)
                     .append(")");
         }
         return builder.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "FI{" +
+                Arrays.toString(frequentItemSet) +
+                '}';
     }
 }

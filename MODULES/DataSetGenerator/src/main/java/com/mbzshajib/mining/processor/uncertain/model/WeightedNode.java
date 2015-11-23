@@ -33,6 +33,7 @@ public class WeightedNode {
 
     }
 
+
     public WeightedNode(String id, int frameSize) {
         this.id = id;
         this.frameSize = frameSize;
@@ -83,11 +84,11 @@ public class WeightedNode {
     }
 
     public int getNodeWeight() {
-        int weight = 0;
+        nodeWeight = 0;
         for(WData wData : uncertainDataList){
-            weight+=wData.getMaxValue();
+            nodeWeight+=wData.getMaxValue();
         }
-        return weight;
+        return nodeWeight;
     }
 
 

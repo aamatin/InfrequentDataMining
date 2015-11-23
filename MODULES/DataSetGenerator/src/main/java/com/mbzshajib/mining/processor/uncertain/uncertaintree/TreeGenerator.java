@@ -138,6 +138,7 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
         sum = 0;
         for (ItemSet itemSet : allWindowItemSet) {
             stringBuilder.append("Window : " + i++ + "----> \n");
+            stringBuilder.append("Infrequent items found in this window ----> " + itemSet.getItemSet().size() + " \n");
             stringBuilder.append(itemSet.traverse());
             stringBuilder.append("\n\n");
         }

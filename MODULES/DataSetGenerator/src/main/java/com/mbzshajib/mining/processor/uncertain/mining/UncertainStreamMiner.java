@@ -34,7 +34,7 @@ public class UncertainStreamMiner implements Processor<UncertainStreamMineInput,
         WeightedTree weightedTree = uncertainStreamMineInput.getWeightedTree();
 //        System.out.println(weightedTree.getTraversedString());
 
-        InfrequentWeightedItemSetMining itemSetMining = new InfrequentWeightedItemSetMining();
+        InfrequentWeightedItemsetMining itemSetMining = new InfrequentWeightedItemsetMining();
         ItemSet itemSet = itemSetMining.mineWeightedTree(weightedTree);
 
         UncertainStreamMineOutput uncertainStreamMineOutput = new UncertainStreamMineOutput();

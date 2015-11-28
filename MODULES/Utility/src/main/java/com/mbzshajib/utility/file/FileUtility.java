@@ -86,12 +86,13 @@ public class FileUtility {
         File dir = new File(path);
         if (!(dir.exists())) {
             dir.mkdir();
-        } else{
-            for (File file : dir.listFiles()) {
-                file.delete();
-            }
-
         }
+//        else{
+//            for (File file : dir.listFiles()) {
+//                file.delete();
+//            }
+//
+//        }
         return dir;
     }
 }

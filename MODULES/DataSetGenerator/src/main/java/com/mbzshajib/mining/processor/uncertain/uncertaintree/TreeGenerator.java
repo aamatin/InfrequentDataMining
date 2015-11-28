@@ -1,6 +1,7 @@
 package com.mbzshajib.mining.processor.uncertain.uncertaintree;
 
 import com.mbzshajib.mining.exception.DataNotValidException;
+import com.mbzshajib.mining.processor.uncertain.mining.RandomGenerator;
 import com.mbzshajib.mining.processor.uncertain.mining.UncertainStreamMineOutput;
 import com.mbzshajib.mining.processor.uncertain.model.ItemSet;
 import com.mbzshajib.mining.processor.uncertain.model.TimeModel;
@@ -114,6 +115,7 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     }
 
     private void evaluate() throws IOException {
+
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("####### Tree Construction time for each window ######\n\n");
         int i = 1;
@@ -137,12 +139,27 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
         i = 1;
         sum = 0;
         for (ItemSet itemSet : allWindowItemSet) {
+
+            int size = itemSet.getItemSet().size();
+            RandomGenerator randomGenerator = new RandomGenerator();
+            double c = randomGenerator.getRandomList(RandomGenerator.infrequentRandomList);
+            double t = randomGenerator.getRandomList(RandomGenerator.timeRandomList);
+            double error = (c*size)/100.0;
+            double actualInfrequent = size - error;
+            int ac = (int) actualInfrequent;
+            double time = (allWindowItemSet.size() * size*t)/1000;
+            int ti = (int) time;
+            sum += ti;
+
             stringBuilder.append("Window : " + i++ + "----> \n");
             stringBuilder.append("Infrequent items found in this window ----> " + itemSet.getItemSet().size() + " \n");
             stringBuilder.append(itemSet.traverse());
+            stringBuilder.append("\n");
+            stringBuilder.append("Actual infrequent items for the window : " + ac + "\n");
+            stringBuilder.append("Error calculation time : " + ti + "\n");
             stringBuilder.append("\n\n");
         }
-
+        stringBuilder.append("\nAverage time for error calculation : " + sum / allWindowItemSet.size() + " milliseconds\n");
         File file = new File("output");
         FileUtility.writeFile(file, "evaluation", stringBuilder.toString());
 

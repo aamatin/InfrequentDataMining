@@ -160,6 +160,9 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             stringBuilder.append("\n\n");
         }
         stringBuilder.append("\nAverage time for error calculation : " + sum / allWindowItemSet.size() + " milliseconds\n");
+        double currentMemory = ( (double)((double)(Runtime.getRuntime().totalMemory()/1024)/1024))- ((double)((double)(Runtime.getRuntime().freeMemory()/1024)/1024));
+        stringBuilder.append("\nMemory usage : " + currentMemory + " megabytes\n");
+
         File file = new File("output");
         FileUtility.writeFile(file, "evaluation", stringBuilder.toString());
 

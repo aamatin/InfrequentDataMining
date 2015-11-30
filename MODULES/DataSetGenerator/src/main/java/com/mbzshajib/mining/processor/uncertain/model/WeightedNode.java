@@ -287,4 +287,12 @@ public class WeightedNode {
             }
         }
     }
+
+    public int countAllChild() {
+        int count = childNodeList.size();
+        for (WeightedNode node : childNodeList) {
+            count = count + node.countAllChild();
+        }
+        return count;
+    }
 }

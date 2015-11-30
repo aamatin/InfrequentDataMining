@@ -11,6 +11,7 @@ import com.mbzshajib.utility.file.FileUtility;
 import com.mbzshajib.utility.model.ProcessingError;
 import com.mbzshajib.utility.model.Processor;
 
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,13 +40,16 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
     private List<TimeModel> treeConstructionTimeAllWindow;
     private List<TimeModel> miningTimeAllWindow;
     private List<ItemSet> allWindowItemSet;
+    private List<Integer> allWindowNodeCount;
+    private int x = 1;
 
 
     public TreeGenerator() {
         windowTransactionList = new ArrayList<>();
         treeConstructionTimeAllWindow = new ArrayList<>();
         miningTimeAllWindow = new ArrayList<>();
-        allWindowItemSet = new ArrayList<>() ;
+        allWindowItemSet = new ArrayList<>();
+        allWindowNodeCount = new ArrayList<>();
     }
 
     @Override
@@ -60,6 +64,8 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             weightedTree = new WeightedTree(treeConstructionInput.getFrameSize(), treeConstructionInput.getWindowSize());
             windowEndTransaction = windowSize;
             this.startTime = System.currentTimeMillis();
+            int w = 1;
+            System.out.println("Window start - " + w);
             for (int frameNo = 0; frameNo < treeConstructionInput.getWindowSize(); frameNo++) {
                 for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                     List<WInputData> nodes = getTransaction();
@@ -68,12 +74,14 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
                 }
             }
             UncertainStreamMineOutput uncertainStreamMineOutput = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+            System.out.println("Infrequent found - " + uncertainStreamMineOutput.getItemSet().getItemSet().size());
             miningTimeAllWindow.add(uncertainStreamMineOutput.getMiningTime());
             ItemSet itemSet = uncertainStreamMineOutput.getItemSet();
             for (String s : itemSet.getItemSet()) {
-                System.out.println("Item : "+ s);
+                System.out.println("Item : " + s);
             }
             allWindowItemSet.add(itemSet);
+            System.out.println("Window end - " + w++);
             for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                 windowTransactionList.remove(0);
             }
@@ -84,13 +92,16 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             while (!(nodes = getTransaction()).isEmpty()) {
                 if (!(frameCounter < treeConstructionInput.getFrameSize())) {
                     frameCounter = 0;
+                    System.out.println("Window start - " + w);
                     UncertainStreamMineOutput uncertainStreamMineOutput1 = treeConstructionInput.getWindowCompletionCallback().sendUpdate(createUpdate(weightedTree));
+                    System.out.println("Infrequent found - " + uncertainStreamMineOutput.getItemSet().getItemSet().size());
                     miningTimeAllWindow.add(uncertainStreamMineOutput1.getMiningTime());
                     itemSet = uncertainStreamMineOutput1.getItemSet();
                     for (String s : itemSet.getItemSet()) {
-                        System.out.println("Item : "+ s);
+                        System.out.println("Item : " + s);
                     }
                     allWindowItemSet.add(itemSet);
+                    System.out.println("Window end - " + w++);
                     for (int i = 0; i < treeConstructionInput.getFrameSize(); i++) {
                         windowTransactionList.remove(0);
                     }
@@ -144,10 +155,10 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             RandomGenerator randomGenerator = new RandomGenerator();
             double c = randomGenerator.getRandomList(RandomGenerator.infrequentRandomList);
             double t = randomGenerator.getRandomList(RandomGenerator.timeRandomList);
-            double error = (c*size)/100.0;
+            double error = (c * size) / 100.0;
             double actualInfrequent = size - error;
             int ac = (int) actualInfrequent;
-            double time = (allWindowItemSet.size() * size*t)/1000;
+            double time = (allWindowItemSet.size() * size * t) / 1000;
             int ti = (int) time;
             sum += ti;
 
@@ -160,8 +171,17 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
             stringBuilder.append("\n\n");
         }
         stringBuilder.append("\nAverage time for error calculation : " + sum / allWindowItemSet.size() + " milliseconds\n");
-        double currentMemory = ( (double)((double)(Runtime.getRuntime().totalMemory()/1024)/1024))- ((double)((double)(Runtime.getRuntime().freeMemory()/1024)/1024));
-        stringBuilder.append("\nMemory usage : " + currentMemory + " megabytes\n");
+        double currentMemory = ((double) ((double) (Runtime.getRuntime().totalMemory() / 1024) / 1024)) - ((double) ((double) (Runtime.getRuntime().freeMemory() / 1024) / 1024));
+
+        int t = 0;
+
+        for (Integer integer : allWindowNodeCount) {
+            t += integer;
+        }
+
+        double avgMem = ((t / allWindowNodeCount.size()) * 4) / 1024 / 1024;
+        stringBuilder.append("\nMemory usage per window: " + (t / allWindowNodeCount.size()) * 4 + " bytes" + " or " + avgMem + " Megabytes\n");
+
 
         File file = new File("output");
         FileUtility.writeFile(file, "evaluation", stringBuilder.toString());
@@ -170,6 +190,9 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
 
 
     private TreeConstructionOutput createUpdate(WeightedTree weightedTree) {
+        int count = weightedTree.getRootNode().countAllChild();
+        System.out.println("Total nodes ## " + count);
+        allWindowNodeCount.add(count);
         TreeConstructionOutput treeConstructionOutput = new TreeConstructionOutput();
         TimeModel timeModel = new TimeModel(startTime, System.currentTimeMillis());
         treeConstructionOutput.setTimeModel(timeModel);
@@ -198,6 +221,7 @@ public class TreeGenerator implements Processor<TreeConstructionInput, TreeConst
 
     private List<WInputData> getTransaction() throws IOException, DataNotValidException {
         String line = bufferedReader.readLine();
+        System.out.println("Transaction ## " + x++ + " : " + line);
         if (line == null) {
             bufferedReader.close();
             return Collections.emptyList();
